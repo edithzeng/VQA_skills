@@ -33,8 +33,10 @@ if __name__ == "__main__":
 
 
 # aggregte visual features for prediction
-def aggregate_visual_features(cv_key):
-    existing_features = df_train_features.copy()[['QID','I_NUM_CATEGORIES','I_NUM_TAGS','I_NUM_COLOURS','I_NUM_FACES']]
+def aggregate_visual_features(df_train, df_train_features, cv_key):
+    existing_features = df_train_features.copy()[['QID','I_NUM_CATEGORIES',
+                                                  'I_NUM_TAGS','I_NUM_COLOURS',
+                                                  'I_NUM_FACES']]
     features = []
     for i, row in df_train.iterrows():
         # use existing features from Nilavra
@@ -44,16 +46,17 @@ def aggregate_visual_features(cv_key):
         num_tags = df['I_NUM_TAGS']
         num_colors = df['I_NUM_COLOURS']
         num_faces = df['I_NUM_FACES']
-        # get high-level visual features with Microsoft cognitive service computer vision API
+        # get high-level visual features with Microsoft cognitive service CV API
         image_name = row[1]
         image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
-        analysis = analyze_image(image_url, cv_key)
-        if len(analysis['description']['captions']) > 0:
-            descriptions = analysis['description']['captions'][0]['text']
-        else:
-            descriptions = None
-        tags = None if len(analysis['description']['tags']) < 1 else analysis['description']['tags']
-        categories = None if len(analysis['categories']) < 1 else analysis['categories'][0]['name']
+        try:
+            ans = analyze_image(image_url, cv_key)
+        except Exception:
+            continue
+        captions = analysis['description']['captions']
+        descriptions = None if len(captions)<1 else captions[0]['text']
+        tags = None if len(analysis['description']['tags'])<1 else analysis['description']['tags']
+        categories = None if len(analysis['categories'])<1 else analysis['categories'][0]['name']
         adult = analysis['adult']['isAdultContent']
         # aggregate features and class
         temp = {'num_categories':num_categories, 'num_tags': num_tags,
@@ -68,7 +71,7 @@ def aggregate_visual_features(cv_key):
 
 # extract high level visual features from Microsoft cognitive service computer vision API
 # codes from in-class lab instructions
-def analyze_image(image_url, visualize=False, cv_key):
+def analyze_image(image_url, cv_key, visualize=False):
     vision_base_url = 'https://westcentralus.api.cognitive.microsoft.com/vision/v1.0'
     vision_analyze_url = vision_base_url + '/analyze?'
     if visualize:
