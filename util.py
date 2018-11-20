@@ -1,35 +1,37 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 import os
 import json
 import pprint
-from pprint import pprint
+import io
 import requests
-from skimage import io
 import cv2
-import matplotlib.pyplot as plt
-import json
+
+from pprint import pprint
+import skimage
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split, cross_val_score, KFold
-from sklearn.preprocessing import Imputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import LinearSVC
-from sklearn.ensemble import VotingClassifier
-from sklearn.ensemble import RandomForestClassifier
-import keras
+from sklearn.ensemble import VotingClassifier, RandomForestClassifier
 from keras.applications.resnet50 import ResNet50
 from keras.preprocessing import image
 from keras.applications.resnet50 import preprocess_input, decode_predictions
 from keras.applications.vgg16 import VGG16
 from keras.preprocessing import image
 from keras.applications.vgg16 import preprocess_input
+import torchvision.models as models
+from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms, utils
+import torchvision.transforms as transforms
+from PIL import Image
+from torch.autograd import Variable
+import torchvision.models as models
 
 def main():
     pass
@@ -38,66 +40,56 @@ if __name__ == "__main__":
 
 
 # aggregte visual features for prediction
-def aggregate_visual_features(df_train, df_train_features, cv_key):
-    existing_features = df_train_features.copy()[['QID','I_NUM_CATEGORIES',
-                                                  'I_NUM_TAGS','I_NUM_COLOURS',
-                                                  'I_NUM_FACES']]
+def aggregate_visual_features(df_train, cv_key):
     features = []
     for i, row in df_train.iterrows():
         # use existing features from Nilavra
         qid, txt, obj, col, cnt, oth = row[0], row[4], row[5], row[6], row[7], row[8]
-        df = existing_features.loc[existing_features['QID'] == qid]
-        num_categories = df['I_NUM_CATEGORIES']
-        num_tags = df['I_NUM_TAGS']
-        num_colors = df['I_NUM_COLOURS']
-        num_faces = df['I_NUM_FACES']
-        # get high-level visual features with Microsoft cognitive service CV API
+        # get objects in the image with Microsoft cognitive service CV API
         image_name = row[1]
         image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
         image_path = '../data/Images/%s'%image_name
-        
+        # denoise & get objects in the image with ResNet and VGG trained on ImageNet
         captions, descriptions, tags, categories, adult = api_call(image_url, cv_key)
-        resnet_tags = resnet_feature_extract(image_path)
-        vgg_tags = vgg_feature_extract(image_path)
-        
+        vgg_tags = cnn_feature_extract('vgg13', image_url)
+        resnet_tags = cnn_feature_extract('resnet', image_url)
         # aggregate features and class
-        temp = {'num_categories':num_categories, 'num_tags': num_tags,
-                'num_colors': num_colors, 'num_faces': num_faces, 
-                'adult': adult, 'categories':categories, 
+        temp = {'adult': adult, 'categories':categories, 
                 'descriptions':descriptions, 'tags':tags,
-                'resnet_tags':resnet_tags, 'vgg_tags':vgg_tags,
+                'vgg_tags': vgg_tags,
+                'resnet_tags':resnet_tags,
                 'TXT': txt, 'OBJ': obj, 'CNT':cnt, 'OTH':oth}
         features.append(temp)
-        
     return pd.DataFrame(features)
 
-# extract visual feature using ResNet50 trained on ImageNet 
-# https://keras.io/applications/#usage-examples-for-image-classification-models
-# ResNet50 (pre-trained on ImageNet)
-# https://arxiv.org/abs/1512.03385
-def resnet_feature_extract(image_path):
-    model = keras.applications.resnet50.ResNet50(weights='imagenet')
-    img = image.load_img(image_path, target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    preds = model.predict(x)
-    preds_list = decode_predictions(preds, top=3)[0]
-    return [preds_list[i][1] for i in range(len(preds_list))]
 
 
-# Oxford Net / VCG 16 (pre-trained on ImageNet)
-# https://arxiv.org/abs/1409.1556
-def vgg_feature_extract(image_path):
-    model = VGG16(weights='imagenet')
-    img = image.load_img(image_path, target_size=(224, 224))
-    x = image.img_to_array(img)
-    x = np.expand_dims(x, axis=0)
-    x = preprocess_input(x)
-    preds = model.predict(x)
-    preds_list = decode_predictions(preds, top=3)[0]
-    return [preds_list[i][1] for i in range(len(preds_list))]
-    
+# https://gist.github.com/jbencook/9918217f866c1aa9967391ba62d123b5
+# https://gist.github.com/jkarimi91/d393688c4d4cdb9251e3f939f138876e
+# https://pytorch.org/docs/stable/torchvision/models.html#id2
+# VGG 13 (OxfordNet)
+# ResNet34 
+def cnn_feature_extract(model, image_url):
+    labels_url = 'https://s3.amazonaws.com/outcome-blog/imagenet/labels.json'
+    response = requests.get(labels_url)
+    labels = {int(key): value for key, value in response.json().items()}
+    response = requests.get(image_url)
+    img = Image.open(io.BytesIO(response.content))
+    transform_pipeline = transforms.Compose([transforms.Resize(224),
+                                             transforms.CenterCrop(224),
+                                             transforms.ToTensor(),
+                                             transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                                                  std=[0.229, 0.224, 0.225])])
+    img = transform_pipeline(img)
+    img = img.unsqueeze(0)
+    img = Variable(img)
+    m = models.vgg13(pretrained=True) if model == 'vgg13' else models.resnet34(pretrained=True)
+    prediction = m(img)
+    prediction = prediction.data.numpy().argmax()
+    return labels[prediction]
+
+
+
     
 def api_call(image_url, cv_key):
     try:
@@ -118,7 +110,7 @@ def analyze_image(image_url, cv_key, visualize=False):
     vision_base_url = 'https://westcentralus.api.cognitive.microsoft.com/vision/v1.0'
     vision_analyze_url = vision_base_url + '/analyze?'
     if visualize:
-        image = io.imread(image_url)
+        image = skimage.io.imread(image_url)
         plt.imshow(image)
         plt.axis('off')
         plt.show()
