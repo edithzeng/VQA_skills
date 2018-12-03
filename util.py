@@ -162,3 +162,95 @@ def analyze_image(image_url, cv_key):
     response.raise_for_status()
     analysis = response.json()
     return analysis
+
+
+kf = KFold(n_splits=5, shuffle=False, random_state=9)
+
+def logit(X_train, X_test, Y_train, Y_test):
+    cv_scores = []
+    C_list = [0.5, 1.0, 2.5, 5.0]
+    for c in C_list:
+        cv_model = LogisticRegression(penalty='l2', C=c, 
+                                      class_weight={0.:0.29, 1.:0.71}, 
+                                      random_state=2, 
+                                      warm_start=True)
+        score = np.mean(cross_val_score(cv_model, X_train, Y_train, cv=kf))
+        cv_scores.append(score)
+    cv_scores = np.asarray(cv_scores)
+    print("10-fold cross-validated score on training set:", np.mean(cv_scores))
+    best_C = C_list[cv_scores.argmax()]
+    print("Best C =", best_C)
+    model = LogisticRegression(C=best_C, random_state=2, warm_start=True)
+    model.fit(X_train, Y_train)
+    print("Best score on test set:", model.score(X_test, Y_test))
+    
+def majority_vote_tuning(X_train, X_test, Y_train, Y_test):
+    
+    lda = LinearDiscriminantAnalysis()
+    knn = KNeighborsClassifier(n_neighbors=20)
+    logit = LogisticRegression(C=1.0, random_state=2, class_weight={0.:0.29, 1.:0.71}, warm_start=True)
+    rf = RandomForestClassifier(n_estimators=400, max_features='sqrt', warm_start=True)
+    
+    clf = VotingClassifier(estimators=[('lda',lda),('knn',knn),('logit',logit),('rf',rf)], voting='soft')
+    
+    cv_scores = cross_val_score(clf, X_train, Y_train, cv=10)
+    
+    print("10-fold cross validation score on training set:", np.mean(cv_scores))
+    
+    clf.fit(X_train, Y_train)
+    print("Accuracy on test set:", clf.score(X_test, Y_test))
+    
+    
+def majority_vote_predictor(X_train, X_test, Y_train, ):
+    
+    lda = LinearDiscriminantAnalysis()
+    knn = KNeighborsClassifier(n_neighbors=20)
+    logit = LogisticRegression(C=1.0, random_state=2, class_weight={0.:0.29, 1.:0.71}, warm_start=True)
+    rf = RandomForestClassifier(n_estimators=400, max_features='sqrt', warm_start=True)
+    
+    clf = VotingClassifier(estimators=[('lda',lda),('knn',knn),('logit',logit),('rf',rf)], voting='soft')
+    
+    clf.fit(X_train, Y_train)
+    return clf.predict(X_test)
+
+def knn(X_train, X_test, Y_train, Y_test):
+    cv_scores = []
+    k_list = [5, 10, 20, 30, 50, 80, 120]
+    for k in k_list:
+        cv_model = KNeighborsClassifier(n_neighbors=k)
+        score = np.mean(cross_val_score(cv_model, X_train, Y_train, cv=kf))
+        cv_scores.append(score)
+    cv_scores = np.asarray(cv_scores)
+    print("10-fold cross-validated score on training set:", np.mean(cv_scores))
+    best_k = k_list[cv_scores.argmax()]
+    print("Best K =", best_k)
+    model = KNeighborsClassifier(n_neighbors=best_k)
+    model.fit(X_train, Y_train)
+    print("Best score on test set:", model.score(X_test, Y_test))
+    
+def lda(X_train, X_test, Y_train, Y_test):
+    cv_scores = np.mean(cross_val_score(LinearDiscriminantAnalysis(), X_train, Y_train, cv=kf))
+    print("10-fold cross validation score on training set:", np.mean(cv_scores))
+    model = LinearDiscriminantAnalysis()
+    model.fit(X_train, Y_train)
+    print("Best score on test set:", model.score(X_test, Y_test))
+    
+def svm(X_train, X_test, Y_train, Y_test):
+    cv_scores = []
+    C_list = [0.05, 0.1, 0.2, 0.5, 0.8, 1.0]
+    for n in C_list:
+        cv_model = LinearSVC(loss='hinge', C=n, random_state=7)
+        kf = KFold(n_splits=10, shuffle=False, random_state=1)
+        score = np.mean(cross_val_score(cv_model, X_train, Y_train, cv=kf))
+        cv_scores.append(score)
+    cv_scores = np.asarray(cv_scores)
+    best_c = C_list[cv_scores.argmax()]
+    model = LinearSVC(loss='hinge', C=best_c, random_state=7)
+    model.fit(X_train, Y_train)
+    return model.score(X_test, Y_test)
+
+def rf(X_train, X_test, Y_train, Y_test, fold=10):
+    model = RandomForestClassifier(n_estimators=30, max_features='sqrt', oob_score=True, warm_start=True)
+    model.fit(X_train, Y_train)
+    model.oob_score_
+    return model.score(X_test, Y_test)
