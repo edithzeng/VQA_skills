@@ -1,6 +1,6 @@
 # VQA_skills
 
-* This repository is for my master's report to be completed in May 2019.
+This repository holds the codes for my master's report to be completed in May 2019.
 
 This research contributes to the understanding of the unique information needs and challenges faced by blind users with the goal to improve the status quo of visual assistive technologies.
 
