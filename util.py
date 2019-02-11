@@ -34,6 +34,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from torch.autograd import Variable
 import torchvision.models as models
+from sklearn.metrics import roc_auc_score
 
 def main():
     pass
@@ -182,36 +183,36 @@ def logit(X_train, X_test, Y_train, Y_test):
     print("Best C =", best_C)
     model = LogisticRegression(C=best_C, random_state=2, warm_start=True)
     model.fit(X_train, Y_train)
-    print("Best score on test set:", model.score(X_test, Y_test))
+    Y_pred = model.predict(X_test)
+    accuracy = model.score(X_test, Y_test)
+    auc = roc_auc_score(Y_test, Y_pred)
+    print("Best score on test set:", accuracy)
+    print("AUC: ", auc) 
     
 def majority_vote_tuning(X_train, X_test, Y_train, Y_test):
-    
     lda = LinearDiscriminantAnalysis()
     knn = KNeighborsClassifier(n_neighbors=20)
     logit = LogisticRegression(C=1.0, random_state=2, class_weight={0.:0.29, 1.:0.71}, warm_start=True)
     rf = RandomForestClassifier(n_estimators=400, max_features='sqrt', warm_start=True)
-    
     clf = VotingClassifier(estimators=[('lda',lda),('knn',knn),('logit',logit),('rf',rf)], voting='soft')
-    
     cv_scores = cross_val_score(clf, X_train, Y_train, cv=10)
-    
     print("10-fold cross validation score on training set:", np.mean(cv_scores))
-    
     clf.fit(X_train, Y_train)
-    print("Accuracy on test set:", clf.score(X_test, Y_test))
+    Y_pred = clf.predict(X_test)
+    accuracy = clf.score(X_test, Y_test)
+    auc = roc_auc_score(Y_test, Y_pred)
+    print("Best score on test set:", accuracy)
+    print("AUC: ", auc) 
     
     
-def majority_vote_predictor(X_train, X_test, Y_train, ):
-    
+def majority_vote_predictor(X_train, X_test, Y_train):
     lda = LinearDiscriminantAnalysis()
     knn = KNeighborsClassifier(n_neighbors=20)
     logit = LogisticRegression(C=1.0, random_state=2, class_weight={0.:0.29, 1.:0.71}, warm_start=True)
     rf = RandomForestClassifier(n_estimators=400, max_features='sqrt', warm_start=True)
-    
     clf = VotingClassifier(estimators=[('lda',lda),('knn',knn),('logit',logit),('rf',rf)], voting='soft')
-    
     clf.fit(X_train, Y_train)
-    return clf.predict(X_test)
+    
 
 def knn(X_train, X_test, Y_train, Y_test):
     cv_scores = []
@@ -226,14 +227,22 @@ def knn(X_train, X_test, Y_train, Y_test):
     print("Best K =", best_k)
     model = KNeighborsClassifier(n_neighbors=best_k)
     model.fit(X_train, Y_train)
-    print("Best score on test set:", model.score(X_test, Y_test))
+    Y_pred = model.predict(X_test)
+    accuracy = model.score(X_test, Y_test)
+    auc = roc_auc_score(Y_test, Y_pred)
+    print("Best score on test set:", accuracy)
+    print("AUC: ", auc) 
     
 def lda(X_train, X_test, Y_train, Y_test):
     cv_scores = np.mean(cross_val_score(LinearDiscriminantAnalysis(), X_train, Y_train, cv=kf))
     print("10-fold cross validation score on training set:", np.mean(cv_scores))
     model = LinearDiscriminantAnalysis()
     model.fit(X_train, Y_train)
-    print("Best score on test set:", model.score(X_test, Y_test))
+    Y_pred = model.predict(X_test)
+    accuracy = model.score(X_test, Y_test)
+    auc = roc_auc_score(Y_test, Y_pred)
+    print("Best score on test set:", accuracy)
+    print("AUC: ", auc) 
     
 def svm(X_train, X_test, Y_train, Y_test):
     cv_scores = []
@@ -247,10 +256,18 @@ def svm(X_train, X_test, Y_train, Y_test):
     best_c = C_list[cv_scores.argmax()]
     model = LinearSVC(loss='hinge', C=best_c, random_state=7)
     model.fit(X_train, Y_train)
-    return model.score(X_test, Y_test)
+    Y_pred = model.predict(X_test)
+    accuracy = model.score(X_test, Y_test)
+    auc = roc_auc_score(Y_test, Y_pred)
+    print("Best score on test set:", accuracy)
+    print("AUC: ", auc)
 
 def rf(X_train, X_test, Y_train, Y_test, fold=10):
     model = RandomForestClassifier(n_estimators=30, max_features='sqrt', oob_score=True, warm_start=True)
     model.fit(X_train, Y_train)
     model.oob_score_
-    return model.score(X_test, Y_test)
+    Y_pred = model.predict(X_test)
+    accuracy = model.score(X_test, Y_test)
+    auc = roc_auc_score(Y_true, Y_pred)
+    print("Best score on test set:", accuracy)
+    print("AUC: ", auc)
