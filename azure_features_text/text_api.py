@@ -1,14 +1,13 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+import os, copy, sys
 import json
 import pprint
 import io
 import requests
 import cv2
 import time
-import sys
 import urllib.error as error
 from pprint import pprint
 import skimage
@@ -38,12 +37,12 @@ from sklearn.metrics import roc_auc_score
 
 def df_cutoff(df):
     """ separate large dataframes to chunks """
-    """ Azure limit up to 1000 records per request """
+    """ Azure limit up to 1000 records per request """\
     buckets = len(df) // 1000
     if buckets > 0:
         chunks = [df.iloc[1000*i:min(1000*(i+1),len(df)),:] for i in range(buckets)]
     else:
-        chunks = df
+        chunks = [copy.deepcopy(df)]
     return chunks
 
 # querying text analytics API
@@ -84,10 +83,11 @@ def get_azure_keyphrases(df, filename, key, url):
         doc = process_questions(c)
         # get key phrases with api call
         result = extract_keyphrases(doc, key, url)
+        print(result)
         # join with skill labels and write to csv
         for row in result['documents']:
             key_phrases = row['keyPhrases']
-            record = chunk.loc[chunk['QID'] == int(row['id'])]
+            record = c.loc[c['QID'] == int(row['id'])]
             qid, question = record.QID.item(), record.QSN.item()
             obj, oth = record.OBJ.item(), record.OTH.item()
             txt, col, cnt = record.TXT.item(), record.COL.item(), record.CNT.item()
