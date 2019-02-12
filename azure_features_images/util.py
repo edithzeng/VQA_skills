@@ -1,3 +1,8 @@
+"""
+support functions for calling Azure computer vision API
+for VizWiz images only
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
