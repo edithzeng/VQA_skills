@@ -1,8 +1,8 @@
 from util_API_color_recognition import *
 
 # connection setup - color in image
-key = str(input("Enter computer vision image analysis key:"))
-vision_base_url = "https://westcentralus.api.cognitive.microsoft.com/vision/v2.0/"
+key = str(input("Enter computer vision image analysis key for CV_2:"))
+vision_base_url = "https://eastus.api.cognitive.microsoft.com/vision/v2.0/"
 
 # load color recognition entries in training sets
 vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')

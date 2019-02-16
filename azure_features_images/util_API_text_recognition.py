@@ -23,7 +23,7 @@ from matplotlib.patches import Rectangle
 from PIL import Image
 from io import BytesIO
 
-# OCR - https://goo.gl/sR74GW
+# OCR
 def ocr_request(vision_base_url, key, image_url, local_image=False):
     """ return a list of lowercase strings, may contain special characters """
     ocr_url = vision_base_url + "ocr"
@@ -54,8 +54,6 @@ def ocr_request(vision_base_url, key, image_url, local_image=False):
     return s
 
 # text recognition: similar to OCR but trained with updated recognition models and executes asynchronously
-# https://goo.gl/A8jsz1
-# https://goo.gl/xxfwRA
 def recognize_handwritten_text(vision_base_url, key, image_url, local_image=False):
     """ return a list of lowercase strings, may contain special characters """
     """ can take local image path or remote url """

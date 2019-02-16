@@ -17,13 +17,20 @@ from matplotlib.patches import Rectangle
 from PIL import Image
 from io import BytesIO
 
-def analyze_image(vision_base_url, image_url, key):
-    vision_analyze_url = vision_base_url + '/analyze?'
+def analyze_image(vision_base_url, image_url, key, local_image=False):
+    vision_analyze_url = vision_base_url + 'analyze'
     headers = {'Ocp-Apim-Subscription-key': key}
-    # params = {'visualfeatures': 'Categories,Description,Color,Faces,ImageType,Tags'}
     params = {'visualfeatures': 'Color,Tags'}
-    data = {'url': image_url}
-    response = requests.post(vision_analyze_url, headers=headers, params=params, json=data)
+    if local_image:
+        image_path = image_url
+        image_data = open(image_path, "rb").read()
+        headers    = {'Ocp-Apim-Subscription-Key': key,
+                      'Content-Type': 'application/octet-stream'}
+        response   = requests.post(vision_analyze_url, headers=headers, params=params, data=image_data)
+    else:
+        data       = {'url': image_url}
+        headers    = {'Ocp-Apim-Subscription-Key': key}
+        response   = requests.post(vision_analyze_url, headers=headers, params=params, json=data)
     response.raise_for_status()
     analysis = response.json()
     return analysis
@@ -46,9 +53,9 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
         qid = row[0]
         img = row[1]
         qsn = row[2]
-        image_url  = "{}{}".format(image_url_base,img)
-        analysis = analyze_image(vision_base_url, image_url, key)
-        tags = analysis['tags']
+        image_url  = "{}{}".format(image_url_base, img)
+        result     = analyze_image(vision_base_url, image_url, key, local_image)
+        tags       = result ['tags']
         dominant_colors = result['color']['dominantColors']
         result_str = "{};{};{};{}\n".format(qid,qsn,tags,dominant_colors)
         file.write(result_str)
