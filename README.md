@@ -1,4 +1,4 @@
-# VQA_skills
+# VQA skills
 
 This repository holds the codes for my master's report to be completed in May 2019.
 
