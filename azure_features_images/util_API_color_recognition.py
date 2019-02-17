@@ -20,7 +20,7 @@ from io import BytesIO
 def analyze_image(vision_base_url, image_url, key, local_image=False):
     vision_analyze_url = vision_base_url + 'analyze'
     headers = {'Ocp-Apim-Subscription-key': key}
-    params = {'visualfeatures': 'Color,Tags'}
+    params = {'visualfeatures': 'Categories,Description,Color'}
     if local_image:
         image_path = image_url
         image_data = open(image_path, "rb").read()
@@ -29,7 +29,6 @@ def analyze_image(vision_base_url, image_url, key, local_image=False):
         response   = requests.post(vision_analyze_url, headers=headers, params=params, data=image_data)
     else:
         data       = {'url': image_url}
-        headers    = {'Ocp-Apim-Subscription-Key': key}
         response   = requests.post(vision_analyze_url, headers=headers, params=params, json=data)
     response.raise_for_status()
     analysis = response.json()
@@ -40,7 +39,7 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
         print("Check argv")
         raise ValueError
     file = open(output_file_path, 'w+')
-    file.write("qid;question;tags;dominant_colors\n")
+    file.write("qid;question;descriptions;tags;dominant_colors\n")
     local_image = False
     image_url_base = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/'
     if dataset == 'vqa':
@@ -53,12 +52,16 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
         qid = row[0]
         img = row[1]
         qsn = row[2]
-        image_url  = "{}{}".format(image_url_base, img)
-        result     = analyze_image(vision_base_url, image_url, key, local_image)
-        tags       = result ['tags']
-        dominant_colors = result['color']['dominantColors']
-        result_str = "{};{};{};{}\n".format(qid,qsn,tags,dominant_colors)
-        file.write(result_str)
+        image_url      = "{}{}".format(image_url_base, img)
+        try:
+            result     = analyze_image(vision_base_url, image_url, key, local_image)
+            tags       = result['description']['tags']
+            desc       = result['description']['captions']    # counting: [0]['txt']
+            dominant_colors = result['color']['dominantColors']
+            result_str = "{};{};{};{};{}\n".format(qid,qsn,desc,tags,dominant_colors)
+            file.write(result_str)
+        except requests.exceptions.HTTPError:      # skip error rows in VizWiz
+            continue
         n += 1
     file.close()
     print("Color recognition results for {} written to {}".format(dataset, output_file_path))

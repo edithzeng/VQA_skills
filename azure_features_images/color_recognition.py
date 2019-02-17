@@ -18,9 +18,9 @@ vqa_val_color = vqa_val.loc[vqa_val['COL'] == 1]
 
 
 # label training sets
-write_to_file(vision_base_url, key, vqa_train, "vqa_train_color_recognition.csv", 'vqa')
-write_to_file(vision_base_url, key, vizwiz_train, "vizwiz_train_color_recognition.csv", 'vizwiz')
+write_to_file(vision_base_url, key, vqa_train_color, "vqa_train_color_recognition.csv", 'vqa')
+write_to_file(vision_base_url, key, vizwiz_train_color, "vizwiz_train_color_recognition.csv", 'vizwiz')
 
 # label validation sets
-write_to_file(vision_base_url, key, vqa_val, "vqa_val_color_recognition.csv", 'vqa')
-write_to_file(vision_base_url, key, vizwiz_train, "vizwiz_val_color_recognition.csv", 'vizwiz')
+write_to_file(vision_base_url, key, vqa_val_color, "vqa_val_color_recognition.csv", 'vqa')
+write_to_file(vision_base_url, key, vizwiz_train_color, "vizwiz_val_color_recognition.csv", 'vizwiz')

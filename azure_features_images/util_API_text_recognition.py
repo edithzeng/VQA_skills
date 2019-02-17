@@ -85,7 +85,7 @@ def recognize_handwritten_text(vision_base_url, key, image_url, local_image=Fals
     polygons = []
     if ("recognitionResult" in analysis):
         polygons = [(line["boundingBox"], line["text"])
-        for line in analysis["recognitionResult"]["lines"]]
+                    for line in analysis["recognitionResult"]["lines"]]
     s = []
     for result in polygons:
         s.append(result[1])
@@ -111,10 +111,13 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
         img = row[1]
         qsn = row[2]
         image_url  = "{}{}".format(image_url_base,img)
-        ocr_text   = ocr_request(vision_base_url, key, image_url, local_image)
-        handwritten_text = recognize_handwritten_text(vision_base_url, key, image_url, local_image)
-        result_str = "{};{};{};{}\n".format(qid,qsn,ocr_text,handwritten_text)
-        file.write(result_str)
+        try:
+            ocr_text   = ocr_request(vision_base_url, key, image_url, local_image)
+            handwritten_text = recognize_handwritten_text(vision_base_url, key, image_url, local_image)
+            result_str = "{};{};{};{}\n".format(qid,qsn,ocr_text,handwritten_text)
+            file.write(result_str)
+        except requests.exceptions.HTTPError:     # 400 error
+            continue
         n += 1
     file.close()
     print("OCR and handwritten text recognition results for {} written to {}".format(dataset, output_file_path))
