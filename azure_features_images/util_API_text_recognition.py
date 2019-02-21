@@ -23,6 +23,11 @@ from matplotlib.patches import Rectangle
 from PIL import Image
 from io import BytesIO
 
+def main():
+    pass
+if __name__ == "__main__":
+    main()
+
 # OCR
 def ocr_request(vision_base_url, key, image_url, local_image=False):
     """ return a list of lowercase strings, may contain special characters """

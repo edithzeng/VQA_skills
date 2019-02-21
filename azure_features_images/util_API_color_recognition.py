@@ -17,6 +17,11 @@ from matplotlib.patches import Rectangle
 from PIL import Image
 from io import BytesIO
 
+def main():
+    pass
+if __name__ == "__main__":
+    main()
+
 def analyze_image(vision_base_url, image_url, key, local_image=False):
     vision_analyze_url = vision_base_url + 'analyze'
     headers = {'Ocp-Apim-Subscription-key': key}
