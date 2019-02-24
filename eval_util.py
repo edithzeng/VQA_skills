@@ -1,5 +1,6 @@
 """ code from Yanan Wang at 
 https://github.com/YananWang0909/VQA-Skills-Predict/blob/master/vqaPredict1/VQAAndEval(color).ipynb
+with minor edit
 """
 
 import pandas as pd
@@ -65,7 +66,12 @@ punct        = [';', r"/", '[', ']', '"', '{', '}', '(', ')',
 				',', '?', '!']
 
 def processPunctuation(inText):
+		if not isinstance(inText, str):
+			return
 		outText = inText
+		punct        = [';', r"/", '[', ']', '"', '{', '}', '(', ')', 
+				'=', '+', '\\', '_', '-', '>', '<', '@', '`', 
+				',', '?', '!']
 		for p in punct:
 			if (p + ' ' in inText or ' ' + p in inText) or (re.search(commaStrip, inText) != None):
 				outText = outText.replace(p, '')
@@ -77,6 +83,8 @@ def processPunctuation(inText):
 		return outText
 	
 def processDigitArticle(inText):
+		if not isinstance(inText, str):
+			return
 		outText = []
 		tempText = inText.lower().split()
 		for word in tempText:
