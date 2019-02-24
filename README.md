@@ -15,3 +15,6 @@ scikit-image 0.14.0
 matplotlib 3.0.0
 scipy 1.2.0
 pandas 0.24.0
+
+# Milestones
+2/24 - finish experiment data cleansing (uploaded to drive)
