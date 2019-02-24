@@ -11,10 +11,10 @@ The original VQA evaluation repo is available at https://github.com/GT-Vision-La
 
 # Requirements
 python 3.7.2 <br />
-scikit-image 0.14.0
-matplotlib 3.0.0
-scipy 1.2.0
-pandas 0.24.0
+scikit-image 0.14.0 <br />
+matplotlib 3.0.0 <br />
+scipy 1.2.0 <br />
+pandas 0.24.0 <br />
 
 # Milestones
 2/24 - finish experiment data cleansing (uploaded to drive)
