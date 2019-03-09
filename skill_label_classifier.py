@@ -239,9 +239,8 @@ class SkillClassifier():
 
 
 def lstm_create_train(train_seq, embedding_matrix, 
-	labels, skill, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=2,
-	training_error):
+	train_labels, skill, val_data, learning_rate, lstm_dim, batch_size, 
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=2):
     l2_reg = regularizers.l2(regularization)
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
@@ -260,31 +259,28 @@ def lstm_create_train(train_seq, embedding_matrix,
     model.add(Bidirectional(lstm_layer))
     model.add(Dropout(0.5))
     model.add(dense_layer)
-    keras.callbacks.Callback()
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizer_param,
                   metrics=['acc'])
-    csv_logger = CSVLogger('./LSTM/text/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs),
-                           separator=',',
-                           append=True)
-    t1 = time.time()
+    history = History()
+    csv_logger = CSVLogger('./LSTM/{}/{}_{}_{}_{}.log'.format(skill, learning_rate, regularization, batch_size, num_epochs),
+                           separator=',', append=True)
     # model fit
+    t1 = time.time()
     model.fit(train_seq,
-              labels.astype('float32'),
+              train_labels.astype('float32'),
               batch_size=batch_size,
               epochs=num_epochs,
+              validation_data=val_data,
               callbacks=[history, csv_logger],
-              verbose=2)
+              verbose=0)
     t2 = time.time()
-    EarlyStopping(monitor='val_loss',
-    	min_delta=0, patience=0, verbose=0, 
-    	mode='auto', baseline=None, 
-    	restore_best_weights=False)
+    # EarlyStopping(monitor='val_loss',min_delta=0, patience=0, verbose=0, mode='auto', baseline=None,restore_best_weights=False)
     # save hdf5
-    model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
-    np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
-               [regularization, (t2-t1) / 3600])
+    #model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
+    #np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
+    #           [regularization, (t2-t1) / 3600])
     #with open('./LSTM/{}/{}_{}_{}_{}_history.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
     #    res_file.write(str(history.history))
     return history
