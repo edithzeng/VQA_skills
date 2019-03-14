@@ -56,8 +56,7 @@ kfold=KFold(n_splits=10)
 
 MAX_DOC_LEN = 40
 VOCAB_SIZE = 3000
-EMBEDDING_DIM = 100
-
+EMBEDDING_DIM = 40
 
 class SkillClassifier():
 
@@ -198,11 +197,10 @@ class SkillClassifier():
 		op = []
 		for i in range(ip.shape[0]):
 			doc      =  ""
-			for j in range(ip.shape[1]):
-				# clean up chars
-				s    =  str(ip[i][j])
+			for j in range(ip.shape[1]):                
+				s    =  str(ip[i][j])    # clean up chars
 				s    =  s.translate({ord(c): "" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+'"}).lower() + " "
-				if j == 1:             # clean descriptions
+				if feature_df_subset.columns[j] == 'descriptions':             # clean descriptions
 					s = re.sub(r'confidence\s+\d+', '', s)
 					s = re.sub(r'text', '', s)
 				# lexicon normalize
@@ -238,7 +236,7 @@ class SkillClassifier():
 		return cleansed
 
 
-def lstm_create_train(train_seq, embedding_matrix, 
+def lstm_create_train(train_seq, embedding_matrix,
 	train_labels, skill, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=1e-7, n_classes=2):
     l2_reg = regularizers.l2(regularization)
@@ -278,9 +276,9 @@ def lstm_create_train(train_seq, embedding_matrix,
     t2 = time.time()
     # EarlyStopping(monitor='val_loss',min_delta=0, patience=0, verbose=0, mode='auto', baseline=None,restore_best_weights=False)
     # save hdf5
-    #model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
-    #np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
-    #           [regularization, (t2-t1) / 3600])
-    #with open('./LSTM/{}/{}_{}_{}_{}_history.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
-    #    res_file.write(str(history.history))
+    model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
+    np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
+               [regularization, (t2-t1) / 3600])
+    with open('./LSTM/{}/{}_{}_{}_{}_history.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
+        res_file.write(str(history.history))
     return history
