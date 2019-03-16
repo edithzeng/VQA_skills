@@ -2,6 +2,12 @@ import pandas as pd
 import random
 import numpy as np
 import copy
+import time
+import re
+import os
+
+from contractions import *
+
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier
@@ -12,11 +18,8 @@ from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
 
 # for LSTM (keras with tf backend)
 import gzip
-import os
 import pickle
 import requests
-import time
-import re
 import gzip
 # os.environ['KERAS_BACKEND']='cntk'
 os.environ['KERAS_BACKEND']='tensorflow'
@@ -39,16 +42,13 @@ nltk.download('punkt')
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 
-import time 
 import keras
 import tensorflow as tf
 config = tf.ConfigProto( device_count = {'GPU': 1 , 'CPU': 56} ) 
 sess = tf.Session(config=config) 
 keras.backend.set_session(sess)
-
 from tensorflow.python.client import device_lib
 print(device_lib.list_local_devices())
-
 from keras import backend as K
 print(K.tensorflow_backend._get_available_gpus())
 
@@ -96,51 +96,51 @@ class SkillClassifier():
 									  delimiter=';', engine='python', 
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'tags':list, 'dominant_colors':list},
-									  quotechar='"', error_bad_lines=False)
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_features_train_text = pd.read_csv('azure_features_images/data/vizwiz_train_text_recognition.csv',
 									  delimiter=';', engine='python', 
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
-									  quotechar='"', error_bad_lines=False)
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_features_val_color = pd.read_csv('azure_features_images/data/vizwiz_val_color_recognition.csv',
 										delimiter=';', engine='python',
 										dtype={'qid':str, 'question':str, 'descriptions':list,
 											'tags':list, 'dominant_colors':list},
-										quotechar='"', error_bad_lines=False)
+										quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_features_val_text = pd.read_csv('azure_features_images/data/vizwiz_val_text_recognition.csv',
 									  delimiter=';', engine='python', 
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
-									  quotechar='"', error_bad_lines=False)
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_train_color = pd.read_csv('azure_features_images/data/vqa_train_color_recognition.csv',
 									delimiter=';', engine='python', 
 									dtype={'qid':str, 'question':str, 'descriptions':list,
 											'tags':list, 'dominant_colors':list},
-									quotechar='"', error_bad_lines=False)
+									quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_train_text = pd.read_csv('azure_features_images/data/vqa_train_text_recognition.csv',
 									  delimiter=';', engine='python', 
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
-									  quotechar='"', error_bad_lines=False)
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_val_color = pd.read_csv('azure_features_images/data/vqa_val_color_recognition.csv',
 									delimiter=';', engine='python',
 										dtype={'qid':str, 'question':str, 'descriptions':list,
 											'tags':list, 'dominant_colors':list},
-										quotechar='"', error_bad_lines=False)
+										quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_val_text = pd.read_csv('azure_features_images/data/vqa_val_text_recognition.csv',
 									  delimiter=';', engine='python', 
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
-									  quotechar='"', error_bad_lines=False)
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_targets_train = pd.read_csv('../vizwiz_skill_typ_train.csv', dtype={'QID':str},
 										delimiter=',', quotechar='"',
-										engine='python', error_bad_lines=False)
+										engine='python', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_targets_val = pd.read_csv('../vizwiz_skill_typ_val.csv', dtype={'QID':str},
-									delimiter=',', quotechar='"', engine='python', error_bad_lines=False)
+									delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_targets_train = pd.read_csv('../vqa_skill_typ_train.csv', dtype={'QID':str},
-										engine='python', quotechar='"', error_bad_lines=False)
+										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_targets_val = pd.read_csv('../vqa_skill_typ_val.csv', dtype={'QID':str},
-										engine='python', quotechar='"', error_bad_lines=False)
+										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 	def join_feature_target(self, feature_df_text, feature_df_color, target_df):
 		feature_text = copy.deepcopy(feature_df_text)
 		feature_color = copy.deepcopy(feature_df_color)
@@ -196,14 +196,20 @@ class SkillClassifier():
 		ip = copy.deepcopy(feature_df_subset).values
 		op = []
 		for i in range(ip.shape[0]):
-			doc      =  ""
+			doc       =  ""
 			for j in range(ip.shape[1]):                
-				s    =  str(ip[i][j])    # clean up chars
-				s    =  s.translate({ord(c): "" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+'"}).lower() + " "
-				if feature_df_subset.columns[j] == 'descriptions':             # clean descriptions
+				s     =  str(ip[i][j]).lower()
+				# expand contractions
+				for cont in contractions:
+					if cont in s:
+						s = s.replace(cont, contractions[cont])
+				# remove special chars
+				s     =  s.translate({ord(c): "" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+'"}) + " "
+				# remove tags in descriptions
+				if feature_df_subset.columns[j] == 'descriptions':
 					s = re.sub(r'confidence\s+\d+', '', s)
 					s = re.sub(r'text', '', s)
-				# lexicon normalize
+				# Lemmatize
 				s    = self.lem(s)
 				doc  += s
 			op.append(doc)
