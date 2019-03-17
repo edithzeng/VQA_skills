@@ -30,7 +30,7 @@ from keras import regularizers
 from keras.optimizers import SGD, Adam
 from keras.initializers import he_normal
 from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional
-from keras.callbacks import History, CSVLogger, EarlyStopping
+from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler
 from keras.utils import to_categorical
 
 import nltk
@@ -270,6 +270,10 @@ def lstm_create_train(train_seq, embedding_matrix,
     history = History()
     csv_logger = CSVLogger('./LSTM/{}/{}_{}_{}_{}.log'.format(skill, learning_rate, regularization, batch_size, num_epochs),
                            separator=',', append=True)
+    # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
+    scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
+    # early stopping on validation loss
+    stop = EarlyStopping(patience=8)
     # model fit
     t1 = time.time()
     model.fit(train_seq,
@@ -277,10 +281,9 @@ def lstm_create_train(train_seq, embedding_matrix,
               batch_size=batch_size,
               epochs=num_epochs,
               validation_data=val_data,
-              callbacks=[history, csv_logger],
+              callbacks=[history, csv_logger, scheduler, stop],
               verbose=0)
     t2 = time.time()
-    # EarlyStopping(monitor='val_loss',min_delta=0, patience=0, verbose=0, mode='auto', baseline=None,restore_best_weights=False)
     # save hdf5
     model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
     np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
