@@ -243,7 +243,7 @@ class SkillClassifier():
 
 def lstm_create_train(train_seq, embedding_matrix,
 	train_labels, skill, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=2):
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=4):
     l2_reg = regularizers.l2(regularization)
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
@@ -270,8 +270,8 @@ def lstm_create_train(train_seq, embedding_matrix,
                            separator=',', append=True)
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
     # scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
-    # early stopping on validation loss
-    # stop = EarlyStopping(patience=500)
+    # early stopping on val_loss
+    # stop = EarlyStopping(patience=200)
     # model fit
     t1 = time.time()
     model.fit(train_seq,
@@ -283,9 +283,9 @@ def lstm_create_train(train_seq, embedding_matrix,
               verbose=0)
     t2 = time.time()
     # save hdf5
-    model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
-    np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
-               [regularization, (t2-t1) / 3600])
-    with open('./LSTM/{}/{}_{}_{}_{}_history.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
-        res_file.write(str(history.history))
-    return history
+    #model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
+    #np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
+    #           [regularization, (t2-t1) / 3600])
+    #with open('./LSTM/{}/{}_{}_{}_{}_history.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
+    #    res_file.write(str(history.history))
+    return model, history
