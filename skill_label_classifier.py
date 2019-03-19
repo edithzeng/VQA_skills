@@ -16,7 +16,6 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
 
-# for LSTM (keras with tf backend)
 import gzip
 import pickle
 import requests
@@ -29,7 +28,7 @@ from keras.models import Sequential, load_model
 from keras import regularizers
 from keras.optimizers import SGD, Adam
 from keras.initializers import he_normal
-from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional
+from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional, BatchNormalization, Activation
 from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler
 from keras.utils import to_categorical
 
@@ -254,15 +253,14 @@ def lstm_create_train(train_seq, embedding_matrix,
                                 mask_zero=False,
                                 embeddings_regularizer=l2_reg,
                                 weights=[embedding_matrix])
-    lstm_layer = LSTM(units=lstm_dim, kernel_regularizer=l2_reg)
-    dense_layer = Dense(n_classes,
-                        activation='softmax', 
-                        kernel_regularizer=l2_reg)
     model = Sequential()
     model.add(embedding_layer)
-    model.add(Bidirectional(lstm_layer))
-    model.add(Dropout(0.5))
-    model.add(dense_layer)
+    model.add(Activation('tanh'))
+    model.add(BatchNormalization())
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg, dropout=0.5, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg)))
+    model.add(Dense(n_classes, activation='softmax', kernel_regularizer=l2_reg))
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizer_param,
@@ -271,9 +269,9 @@ def lstm_create_train(train_seq, embedding_matrix,
     csv_logger = CSVLogger('./LSTM/{}/{}_{}_{}_{}.log'.format(skill, learning_rate, regularization, batch_size, num_epochs),
                            separator=',', append=True)
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
-    scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
+    # scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
     # early stopping on validation loss
-    stop = EarlyStopping(patience=8)
+    # stop = EarlyStopping(patience=500)
     # model fit
     t1 = time.time()
     model.fit(train_seq,
@@ -281,7 +279,7 @@ def lstm_create_train(train_seq, embedding_matrix,
               batch_size=batch_size,
               epochs=num_epochs,
               validation_data=val_data,
-              callbacks=[history, csv_logger, scheduler, stop],
+              callbacks=[history, csv_logger],
               verbose=0)
     t2 = time.time()
     # save hdf5
