@@ -54,8 +54,8 @@ print(K.tensorflow_backend._get_available_gpus())
 kfold=KFold(n_splits=10)
 
 MAX_DOC_LEN = 40
-VOCAB_SIZE = 3000
-EMBEDDING_DIM = 40
+VOCAB_SIZE = 50000
+EMBEDDING_DIM = 300
 
 class SkillClassifier():
 
@@ -257,12 +257,12 @@ def lstm_create_train(train_seq, embedding_matrix,
     model.add(embedding_layer)
     model.add(Activation('tanh'))
     model.add(BatchNormalization())
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg, return_sequences=True)))
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg, dropout=0.5, return_sequences=True)))
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg)))
-    model.add(Dense(n_classes, activation='softmax', kernel_regularizer=l2_reg))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
+    model.add(Dense(n_classes, activation='sigmoid'))
 
-    model.compile(loss='categorical_crossentropy',
+    model.compile(loss='binary_crossentropy',
                   optimizer=optimizer_param,
                   metrics=['acc'])
     history = History()
@@ -279,6 +279,7 @@ def lstm_create_train(train_seq, embedding_matrix,
               batch_size=batch_size,
               epochs=num_epochs,
               validation_data=val_data,
+              shuffle=True,
               callbacks=[history, csv_logger],
               verbose=0)
     t2 = time.time()
