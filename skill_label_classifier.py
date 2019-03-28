@@ -29,7 +29,7 @@ from keras import regularizers
 from keras.optimizers import SGD, Adam
 from keras.initializers import he_normal
 from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional, BatchNormalization, Activation
-from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler
+from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler, TensorBoard
 from keras.utils import to_categorical
 
 import nltk
@@ -242,7 +242,7 @@ class SkillClassifier():
 
 
 def lstm_create_train(train_seq, embedding_matrix,
-	train_labels, skill, val_data, learning_rate, lstm_dim, batch_size, 
+	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=1e-7, n_classes=4):
     l2_reg = regularizers.l2(regularization)
     # init model
@@ -266,8 +266,11 @@ def lstm_create_train(train_seq, embedding_matrix,
                   optimizer=optimizer_param,
                   metrics=['acc'])
     history = History()
-    csv_logger = CSVLogger('./LSTM/{}/{}_{}_{}_{}.log'.format(skill, learning_rate, regularization, batch_size, num_epochs),
+    csv_logger = CSVLogger('./LSTM/{}/{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs),
                            separator=',', append=True)
+    tensorboard = TensorBoard(log_dir='./LSTM/logs',
+                             batch_size=batch_size,
+                             update_freq='epoch')
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
     # scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
     # early stopping on val_loss
@@ -280,13 +283,13 @@ def lstm_create_train(train_seq, embedding_matrix,
               epochs=num_epochs,
               validation_data=val_data,
               shuffle=True,
-              callbacks=[history, csv_logger],
+              callbacks=[history, csv_logger, tensorboard],
               verbose=0)
     t2 = time.time()
     # save hdf5
-    #model.save('./LSTM/{}/{}_{}_{}_{}_model.h5'.format(skill, learning_rate, regularization, batch_size, num_epochs))
-    #np.savetxt('./LSTM/{}/{}_{}_{}_{}_time.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), 
-    #           [regularization, (t2-t1) / 3600])
-    #with open('./LSTM/{}/{}_{}_{}_{}_history.txt'.format(skill, learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
-    #    res_file.write(str(history.history))
+    model.save('./LSTM/{}/{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
+    np.savetxt('./LSTM/{}/{}_{}_{}_time.txt'.format(learning_rate, regularization, batch_size, num_epochs), 
+               [regularization, (t2-t1) / 3600])
+    with open('./LSTM/{}/{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
+        res_file.write(str(history.history))
     return model, history
