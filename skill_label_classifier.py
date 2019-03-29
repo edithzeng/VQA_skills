@@ -29,7 +29,7 @@ from keras import regularizers
 from keras.optimizers import SGD, Adam
 from keras.initializers import he_normal
 from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional, BatchNormalization, Activation
-from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler, TensorBoard
+from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler, TensorBoard, ModelCheckpoint
 from keras.utils import to_categorical
 
 import nltk
@@ -266,16 +266,14 @@ def lstm_create_train(train_seq, embedding_matrix,
                   optimizer=optimizer_param,
                   metrics=['acc'])
     history = History()
-    csv_logger = CSVLogger('./LSTM/{}/{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs),
-                           separator=',', append=True)
-    tensorboard = TensorBoard(log_dir='./LSTM/logs',
-                             batch_size=batch_size,
-                             update_freq='epoch')
+    csv_logger = CSVLogger('./LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs),
+                           separator=',',
+                           append=True)
+    checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
-    # scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
+    scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
     # early stopping on val_loss
     # stop = EarlyStopping(patience=200)
-    # model fit
     t1 = time.time()
     model.fit(train_seq,
               train_labels.astype('float32'),
@@ -283,13 +281,13 @@ def lstm_create_train(train_seq, embedding_matrix,
               epochs=num_epochs,
               validation_data=val_data,
               shuffle=True,
-              callbacks=[history, csv_logger, tensorboard],
-              verbose=0)
+              callbacks=[scheduler, history, csv_logger],
+              verbose=1)
     t2 = time.time()
     # save hdf5
-    model.save('./LSTM/{}/{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
-    np.savetxt('./LSTM/{}/{}_{}_{}_time.txt'.format(learning_rate, regularization, batch_size, num_epochs), 
+    model.save('./LSTM/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
+    np.savetxt('./LSTM/{}_{}_{}_{}_time.txt'.format(learning_rate, regularization, batch_size, num_epochs), 
                [regularization, (t2-t1) / 3600])
-    with open('./LSTM/{}/{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
+    with open('./LSTM/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
         res_file.write(str(history.history))
     return model, history
