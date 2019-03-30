@@ -64,11 +64,15 @@ class SkillClassifier():
 		self.vizwiz_features_val_text    = None
 		self.vizwiz_features_train_color = None
 		self.vizwiz_features_val_color   = None
+		self.vizwiz_features_train_counting = None
+		self.vizwiz_features_val_counting   = None
 
 		self.vqa_features_train_text     = None
 		self.vqa_features_val_text       = None
 		self.vqa_features_train_color    = None
 		self.vqa_features_val_color      = None
+		self.vqa_features_train_counting = None
+		self.vqa_features_val_counting   = None
 
 		self.vizwiz_targets_train        = None
 		self.vizwiz_targets_val          = None
