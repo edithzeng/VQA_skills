@@ -245,9 +245,10 @@ class SkillClassifier():
 		return cleansed
 
 
+
 def lstm_create_train(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=4):
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=3):
     l2_reg = regularizers.l2(regularization)
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
@@ -265,10 +266,10 @@ def lstm_create_train(train_seq, embedding_matrix,
     model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
     model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
     model.add(Dense(n_classes, activation='sigmoid'))
-
     model.compile(loss='binary_crossentropy',
                   optimizer=optimizer_param,
                   metrics=['acc'])
+
     history = History()
     logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
     csv_logger = CSVLogger(logfile, separator=',', append=True)
@@ -277,6 +278,7 @@ def lstm_create_train(train_seq, embedding_matrix,
     scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
     # stop = EarlyStopping(patience=200)
     print("Log file:", logfile)
+
     t1 = time.time()
     model.fit(train_seq,
               train_labels.astype('float32'),
