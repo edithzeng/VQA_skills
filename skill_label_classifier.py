@@ -266,14 +266,13 @@ def lstm_create_train(train_seq, embedding_matrix,
                   optimizer=optimizer_param,
                   metrics=['acc'])
     history = History()
-    csv_logger = CSVLogger('./LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs),
-                           separator=',',
-                           append=True)
+    logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
+    csv_logger = CSVLogger(logfile, separator=',', append=True)
     checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
     scheduler = LearningRateScheduler(lambda x: learning_rate*10**((x+1)/32), verbose=0)
-    # early stopping on val_loss
     # stop = EarlyStopping(patience=200)
+    print("Log file:", logfile)
     t1 = time.time()
     model.fit(train_seq,
               train_labels.astype('float32'),
@@ -282,7 +281,7 @@ def lstm_create_train(train_seq, embedding_matrix,
               validation_data=val_data,
               shuffle=True,
               callbacks=[scheduler, history, csv_logger],
-              verbose=1)
+              verbose=0)
     t2 = time.time()
     # save hdf5
     model.save('./LSTM/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
