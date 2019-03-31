@@ -128,4 +128,9 @@ model, history = lstm_create_train(train_seq, embedding_matrix,
                  optimizer_param=SGD(lr=L, nesterov=True),
                  regularization=R, n_classes=2)
 preds = model.predict(val_seq, verbose=0)
-print("accuracy:", accuracy_score(y_val, preds))
+y_pred_text = [1 if i >= 0.5 else 0 for i in preds[:,0]]
+y_pred_color = [1 if i >= 0.5 else 0 for i in preds[:,1]]
+y_pred_counting = [1 if i >= 0.5 else 0 for i in preds[:,2]]
+print("VizWiz, all features - accuracy\ntext: {}\ncolor:{}\ncounting:{}".format(accuracy_score(y_val[:,0], y_pred_text),
+                                                        accuracy_score(y_val[:,1], y_pred_color),
+                                                        accuracy_score(y_val[:,2], y_pred_counting)))
