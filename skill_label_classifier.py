@@ -248,23 +248,22 @@ class SkillClassifier():
 
 def lstm_create_train(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=3):
-    l2_reg = regularizers.l2(regularization)
+	num_epochs, optimizer_param, regularization=(1e-10, 1e-10), n_classes=3):
+    elastic_net = keras.regularizers.l1_l2(l1=regularization[0], l2=regularization[1])
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
                                 EMBEDDING_DIM,
                                 input_length=MAX_DOC_LEN,
                                 trainable=True,
                                 mask_zero=False,
-                                embeddings_regularizer=l2_reg,
                                 weights=[embedding_matrix])
     model = Sequential()
     model.add(embedding_layer)
     model.add(Activation('tanh'))
     model.add(BatchNormalization())
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=elastic_net, return_sequences=True)))
     model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=elastic_net)))
     model.add(Dense(n_classes, activation='sigmoid'))
     model.compile(loss='binary_crossentropy',
                   optimizer=optimizer_param,
@@ -275,7 +274,7 @@ def lstm_create_train(train_seq, embedding_matrix,
     csv_logger = CSVLogger(logfile, separator=',', append=True)
     checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
-    scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/128), verbose=0)
+    scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
     # stop = EarlyStopping(patience=200)
     print("Log file:", logfile)
 
