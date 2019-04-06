@@ -249,7 +249,7 @@ class SkillClassifier():
 
 def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=3):
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=3, verbose=0):
     l2_reg = regularizers.l2(regularization)
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
@@ -288,7 +288,7 @@ def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
               validation_data=val_data,
               shuffle=True,
               callbacks=[scheduler, history, csv_logger],
-              verbose=1)
+              verbose=verbose)
     t2 = time.time()
     # save hdf5
     model.save('./LSTM/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
