@@ -248,22 +248,23 @@ class SkillClassifier():
 
 def lstm_create_train(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=(1e-10, 1e-10), n_classes=3):
-    elastic_net = keras.regularizers.l1_l2(l1=regularization[0], l2=regularization[1])
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=3):
+    l2_reg = regularizers.l2(regularization)
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
                                 EMBEDDING_DIM,
                                 input_length=MAX_DOC_LEN,
                                 trainable=True,
                                 mask_zero=False,
+                                embeddings_regularizer=l2_reg,
                                 weights=[embedding_matrix])
     model = Sequential()
     model.add(embedding_layer)
     model.add(Activation('tanh'))
     model.add(BatchNormalization())
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=elastic_net, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
     model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=elastic_net)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
     model.add(Dense(n_classes, activation='sigmoid'))
     model.compile(loss='binary_crossentropy',
                   optimizer=optimizer_param,
@@ -290,8 +291,8 @@ def lstm_create_train(train_seq, embedding_matrix,
     t2 = time.time()
     # save hdf5
     model.save('./LSTM/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
-    np.savetxt('./LSTM/{}_{}_{}_{}_time.txt'.format(learning_rate, regularization, batch_size, num_epochs), 
-               [regularization, (t2-t1) / 3600])
+    #np.savetxt('./LSTM/{}_{}_{}_{}_time.txt'.format(learning_rate, regularization, batch_size, num_epochs), 
+    #           [regularization, (t2-t1) / 3600])
     with open('./LSTM/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
         res_file.write(str(history.history))
     return model, history
