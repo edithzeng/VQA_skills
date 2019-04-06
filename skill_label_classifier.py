@@ -56,7 +56,7 @@ print(K.tensorflow_backend._get_available_gpus())
 kfold=KFold(n_splits=10)
 
 VOCAB_SIZE = 50000
-EMBEDDING_DIM = 150
+EMBEDDING_DIM = 300
 
 class SkillClassifier():
 
