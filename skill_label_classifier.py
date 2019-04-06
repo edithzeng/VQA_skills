@@ -21,6 +21,7 @@ import pickle
 import requests
 import gzip
 # os.environ['KERAS_BACKEND']='cntk'
+# os.environ['CUDA_VISIBLE_DEVICES'] = "-1"  # disable GPU
 os.environ['KERAS_BACKEND']='tensorflow'
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
@@ -36,14 +37,15 @@ import nltk
 import gensim
 import logging
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-nltk.download('wordnet')
-nltk.download('punkt')
-nltk.download('stopwords')
+#nltk.download('wordnet')
+#nltk.download('punkt')
+#nltk.download('stopwords')
 from nltk.corpus import stopwords
 
 import keras
 import tensorflow as tf
 config = tf.ConfigProto( device_count = {'GPU': 1 , 'CPU': 56} ) 
+# config = tf.ConfigProto(device_count={'GPU': -1, 'CPU': 1})
 sess = tf.Session(config=config) 
 keras.backend.set_session(sess)
 from tensorflow.python.client import device_lib
@@ -247,22 +249,23 @@ class SkillClassifier():
 
 def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=(1e-10, 1e-10), n_classes=3):
-    elastic_net = keras.regularizers.l1_l2(l1=regularization[0], l2=regularization[1])
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=3):
+    l2_reg = regularizers.l2(regularization)
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
                                 EMBEDDING_DIM,
                                 input_length=MAX_DOC_LEN,
-                                trainable=True,
+                                trainable=False,
                                 mask_zero=False,
+                                embeddings_regularizer=l2_reg,
                                 weights=[embedding_matrix])
     model = Sequential()
     model.add(embedding_layer)
     model.add(Activation('tanh'))
     model.add(BatchNormalization())
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=elastic_net, return_sequences=True)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
     model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=elastic_net)))
+    model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
     model.add(Dense(n_classes, activation='sigmoid'))
     model.compile(loss='binary_crossentropy',
                   optimizer=optimizer_param,
@@ -285,7 +288,7 @@ def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
               validation_data=val_data,
               shuffle=True,
               callbacks=[scheduler, history, csv_logger],
-              verbose=0)
+              verbose=1)
     t2 = time.time()
     # save hdf5
     model.save('./LSTM/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
