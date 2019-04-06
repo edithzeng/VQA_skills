@@ -39,26 +39,33 @@ features_val   = experiment.features_val
 # check training class distribution
 text_recognition_y_train = np.asarray(experiment.txt_train).astype('float32')
 color_recognition_y_train = np.asarray(experiment.col_train).astype('float32')
+counting_y_train = np.asarray(experiment.cnt_train).astype('float32')
+
 print('Number of training samples each class: ')
 print('Text recognition - 1: {} 0: {}'.format(np.count_nonzero(text_recognition_y_train), 
       len(text_recognition_y_train)-np.count_nonzero(text_recognition_y_train)))
 print('Color recognition - 1:{} 0: {}'.format(np.count_nonzero(color_recognition_y_train),
-     len(color_recognition_y_train)-np.count_nonzero(color_recognition_y_train)))
+      len(color_recognition_y_train)-np.count_nonzero(color_recognition_y_train)))
+print('Counting - 1: {} 0: {}'.format(np.count_nonzero(counting_y_train), 
+      len(counting_y_train)-np.count_nonzero(counting_y_train)))
 
-n_classes = 2
+n_classes = 3
 
-y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train))
+y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train, counting_y_train))
 
 # check validation class distribution
 text_recognition_y_val = np.asarray(experiment.txt_val).astype('float32')
 color_recognition_y_val = np.asarray(experiment.col_val).astype('float32')
+counting_y_val = np.asarray(experiment.cnt_val).astype('float32')
 print('Number of validation samples each class: ')
 print('Text recognition - 1: {} 0: {}'.format(np.count_nonzero(text_recognition_y_val), 
       len(text_recognition_y_val)-np.count_nonzero(text_recognition_y_val)))
 print('Color recognition - 1:{} 0: {}'.format(np.count_nonzero(color_recognition_y_val),
      len(color_recognition_y_val)-np.count_nonzero(color_recognition_y_val)))
+print('Counting - 1:{} 0: {}'.format(np.count_nonzero(counting_y_val),
+     len(counting_y_val)-np.count_nonzero(counting_y_val)))
 
-y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val))
+y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val, counting_y_val))
 
 # tokenize
 tok        = Tokenizer(num_words=VOCAB_SIZE, 
@@ -66,12 +73,27 @@ tok        = Tokenizer(num_words=VOCAB_SIZE,
                        lower=True,
                        split=" ")
 tok.fit_on_texts(features_train)
+# create training sequences
+train_seq  = tok.texts_to_sequences(features_train)
+MAX_DOC_LEN_train = 0
+for seq in train_seq:
+    MAX_DOC_LEN_train = max(MAX_DOC_LEN_train, len(train_seq))
+# create validation sequences
+val_seq     = tok.texts_to_sequences(features_val)
+MAX_DOC_LEN_val   = 0
+for seq in val_seq:
+    MAX_DOC_LEN_val = max(MAX_DOC_LEN_val, len(val_seq))
+# pad training & validation sequence
+MAX_DOC_LEN = min(MAX_DOC_LEN_train, MAX_DOC_LEN_val)
+train_seq  = sequence.pad_sequences(train_seq, maxlen=MAX_DOC_LEN)
+val_seq    = sequence.pad_sequences(val_seq, maxlen=MAX_DOC_LEN)
 
 # create sequences & pad
-train_seq  = tok.texts_to_sequences(features_train)
-train_seq  = sequence.pad_sequences(train_seq, maxlen=MAX_DOC_LEN)
-val_seq    = tok.texts_to_sequences(features_val)
-val_seq    = sequence.pad_sequences(val_seq, maxlen=MAX_DOC_LEN)
+#train_seq  = tok.texts_to_sequences(features_train)
+#train_seq  = sequence.pad_sequences(train_seq, maxlen=MAX_DOC_LEN_train)
+#train_seq  = sequence.pad_sequences(train_seq)
+#val_seq    = tok.texts_to_sequences(features_val, maxlen=min(MAX_DOC_LEN_train, MAX_DOC_LEN_val))
+#val_seq    = sequence.pad_sequences(val_seq)
 
 # standardize training and testing features
 sc = StandardScaler()
@@ -89,7 +111,7 @@ for doc in features_train:
         word_lst = [w for w in nltk.tokenize.word_tokenize(sent) if w.isalnum()]
         sent_lst.append(word_lst)
 
-EMBEDDING_DIM = 300
+EMBEDDING_DIM = 150
 googlenews_corpus = '/anaconda/envs/py35/lib/python3.5/site-packages/gensim/test/test_data/GoogleNews-vectors-negative300.bin'
         
 # load pre-trained word2vec on GoogleNews (https://code.google.com/archive/p/word2vec/)
@@ -109,16 +131,16 @@ for word, i in tok.word_index.items():
     if embedding_vector is not None and i < VOCAB_SIZE:
         embedding_matrix[i] = embedding_vector
 
-# PCA for dimensionality reduction
+# PCA to reduce dimensionality
 N_COMPONENTS = 40
 train_seq, val_seq = preprocess_pca(train_seq, val_seq, dim=N_COMPONENTS)
 
-# train RNN
+# train on GPU
 L = 1e-1
 R = 0
 B = 64
 E = 1000
-model, history = lstm_create_train(train_seq, embedding_matrix,
+model, history = lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
                  train_labels=y_train,
                  val_data=val_data,
                  learning_rate=L,
