@@ -53,9 +53,8 @@ print(K.tensorflow_backend._get_available_gpus())
 
 kfold=KFold(n_splits=10)
 
-MAX_DOC_LEN = 40
 VOCAB_SIZE = 50000
-EMBEDDING_DIM = 300
+EMBEDDING_DIM = 150
 
 class SkillClassifier():
 
@@ -246,7 +245,7 @@ class SkillClassifier():
 
 
 
-def lstm_create_train(train_seq, embedding_matrix,
+def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=(1e-10, 1e-10), n_classes=3):
     elastic_net = keras.regularizers.l1_l2(l1=regularization[0], l2=regularization[1])
@@ -272,7 +271,7 @@ def lstm_create_train(train_seq, embedding_matrix,
     history = History()
     logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
     csv_logger = CSVLogger(logfile, separator=',', append=True)
-    checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
+    # checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
     # exponential scheduling (Andrew Senior et al., 2013) for Nesterov
     scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
     # stop = EarlyStopping(patience=200)
