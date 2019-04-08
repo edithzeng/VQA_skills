@@ -81,6 +81,8 @@ def feature_extract(image_url=None, image_path=None):
 		img = transform_pipeline(img)
 		img = img.unsqueeze(0)
 		img = Variable(img)
+		img = img.data.numpy()
+		img = np.transpose(img, (2,0,1))
 	if image_path:
 		img = image.load_img(image_path, target_size=(224,224))
 		img = image.img_to_array(img)
@@ -89,8 +91,6 @@ def feature_extract(image_url=None, image_path=None):
 	model = ResNet50(weights='imagenet')
 	features = model.predict(img)
 	return features
-
-
 
 
 
