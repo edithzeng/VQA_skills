@@ -29,39 +29,34 @@ from PIL import Image
 from torch.autograd import Variable
 import torchvision.models as models
 from keras.applications.resnet50 import preprocess_input, decode_predictions
-from sklearn.metrics import roc_auc_score
+import h5py
 
 def nn_feature_extract_vizwiz(df, logfile):
-	features = []
-	file = open(logfile, "a")
-	file.write("qid,image_feature_vector\n")
-	for i, row in df.iterrows():
-		qid = row[0]
-		image_name = row[1]
+	f = h5py.File(logfile, "w-")
+	for i in range(len(df)):
+		if (i%100 == 0):
+			print("{0:.0%}".format(float(i)/len(df)), flush=True)
+		row = df.iloc[i,:]
+		qid = row['QID']
+		image_name = qid
 		image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
 		nn_feature_vector = feature_extract(image_url=image_url)
-		result = {'qid': qid, 'image_feature_vector': nn_feature_vector}
-		result_str = "{},{}\n".format(qid, nn_feature_vector)
-		features.append(result)
-		file.write(result_str)
-	file.close()
-	return pd.DataFrame(features)
+		f[qid] = nn_feature_vector
+	print("Result written to", logfile)
 
+# TODO
 def nn_feature_extract_vqa(df, logfile):
-	features = []
-	file = open(logfile, "a")
-	file.write("qid,image_feature_vector\n")
-	for i, row in df.iterrows():
-		qid = row[0]
-		image_name = row[1]
+	f = h5py.File(logfile, 'w-')
+	for i in range(len(df)):
+		if (i%100 == 0):
+			print("{0:.0%}".format(float(i)/len(df)), flush=True)
+		row = df.iloc[i, :]
+		qid = row['QID']
+		image_name = row['IMG']
 		image_path = "../../VQA_data/images/{}".format(image_name)
 		nn_feature_vector = feature_extract(image_path=image_path)
-		result = {'qid': qid, 'image_feature_vector': nn_feature_vector}
-		result_str = "{},{}\n".format(qid, nn_feature_vector)
-		features.append(result)
-		file.write(result_str)
-	file.close()
-	return pd.DataFrame(features)
+		f[qid] = nn_feature_vector
+	print("Result written to", logfile)
 
 # ResNet34: He et al. https://goo.gl/KHQcso
 # InceptionV3: https://arxiv.org/abs/1512.00567
@@ -95,15 +90,13 @@ def feature_extract(image_url=None, image_path=None):
 
 
 # extract features for VQA training and validation data 
-#vqa_train = pd.read_csv('../../vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
+vqa_train = pd.read_csv('../../vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
 vqa_val = pd.read_csv('../../vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
-#nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.csv")
-#print("finished VQA train")
-nn_feature_extract_vqa(vqa_val, "vqa_image_feature_val.csv")
-print("finished VQA val")
+nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.hdf5")
+nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.hdf5")
 
 # extract image features for VizWiz training and validation data
 #vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
-#vizwiz_val = pd.read_csv("../../vizwiz_skill_typ_val.csv", skipinitialspace=True, engine='python')
-#nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.csv")
-#nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_val.csv")
+#vizwiz_val = pd.read_csv("../../vizwiz_skill_typ_val.hdf5", skipinitialspace=True, engine='python')
+#nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.hdf5")
+#nn_feature_extract_vizwiz(vizwiz_val, "vizwiz_image_feature_val.csv")
