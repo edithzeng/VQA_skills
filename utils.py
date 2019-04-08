@@ -5,7 +5,25 @@
 VOCAB_SIZE = 50000
 EMBEDDING_DIM = 300
 
-def nn(MAX_DOC_LEN, train_seq, embedding_matrix,
+# helper function to find optimal number of PC (elbow method)
+def plot_explained_variance(X_train):
+    pca = PCA()
+    pca_full = pca.fit(X_train)
+    plt.plot(np.cumsum(pca_full.explained_variance_ratio_))
+    plt.xlabel("number of principal components")
+    plt.ylabel("cumulative explained variance")
+    plt.grid(color='grey',linestyle='-',alpha=0.2)
+    plt.show()
+    
+def preprocess_pca(X_train, X_test, dim, r=None):
+    pca = PCA(n_components=dim, random_state=r)
+    X_train_pca = pca.fit_transform(X_train)
+    X_test_pca = pca.transform(X_test)
+    return X_train_pca, X_test_pca
+
+
+# classifier
+def skill_predictor(MAX_DOC_LEN, train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=1e-7, n_classes=3, verbose=0):
     l2_reg = regularizers.l2(regularization)
