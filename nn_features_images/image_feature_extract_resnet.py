@@ -80,6 +80,7 @@ def feature_extract(image_url=None, image_path=None):
 		img = transform_pipeline(img)
 		img = img.unsqueeze(0)
 		img = Variable(img)
+		# img = img.numpy()
 		img = transforms.ToPILImage()(img)
 	if image_path:
 		img = image.load_img(image_path, target_size=(224,224))
