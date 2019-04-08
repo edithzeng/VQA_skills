@@ -64,7 +64,7 @@ def nn_feature_extract_vqa(df, logfile):
 
 # ResNet34: He et al. https://goo.gl/KHQcso
 # InceptionV3: https://arxiv.org/abs/1512.00567
-# https://keras.io/preprocessing/image/c
+# https://seba-1511.github.io/tutorials/beginner/data_loading_tutorial.html
 def feature_extract(image_url=None, image_path=None):
 	if image_url:
 		labels_url = 'https://s3.amazonaws.com/outcome-blog/imagenet/labels.json'
@@ -80,8 +80,10 @@ def feature_extract(image_url=None, image_path=None):
 		img = transform_pipeline(img)
 		img = img.unsqueeze(0)
 		img = Variable(img)
-		# img = img.numpy()
 		img = transforms.ToPILImage()(img)
+		img = image.convert("RGB")
+		img = np.asarray(image, dtype=np.float32)
+		img = img[:, :, :3]
 	if image_path:
 		img = image.load_img(image_path, target_size=(224,224))
 	img = image.img_to_array(img)
