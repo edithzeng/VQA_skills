@@ -24,6 +24,7 @@ import torchvision.models as models
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
 import torchvision.transforms as transforms
+import PIL
 from PIL import Image
 from torch.autograd import Variable
 import torchvision.models as models
@@ -80,15 +81,11 @@ def feature_extract(image_url=None, image_path=None):
 		img = transform_pipeline(img)
 		img = img.unsqueeze(0)
 		img = Variable(img)
-		img = transforms.ToPILImage()(img)
-		img = image.convert("RGB")
-		img = np.asarray(image, dtype=np.float32)
-		img = img[:, :, :3]
 	if image_path:
 		img = image.load_img(image_path, target_size=(224,224))
-	img = image.img_to_array(img)
-	img = np.expand_dims(img, axis=0)
-	img = preprocess_input(img)
+		img = image.img_to_array(img)
+		img = np.expand_dims(img, axis=0)
+		img = preprocess_input(img)
 	model = ResNet50(weights='imagenet')
 	features = model.predict(img)
 	return features
