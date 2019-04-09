@@ -1,9 +1,42 @@
-""" util """
+""" utils for skill classifier """
+import random
+import copy
+import time
+import re
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.metrics import f1_score, accuracy_score
+from sklearn.model_selection import cross_val_score, KFold
 
+import keras
+import tensorflow as tf
+os.environ['KERAS_BACKEND']='tensorflow'
+from keras.preprocessing import sequence
+from keras.preprocessing.text import Tokenizer, text_to_word_sequence
+from keras.models import Sequential, load_model
+from keras import regularizers
+from keras.optimizers import SGD, Adam
+from keras.initializers import he_normal
+from keras.layers import Dense, Dropout, Embedding, LSTM, Bidirectional, BatchNormalization, Activation
+from keras.callbacks import History, CSVLogger, EarlyStopping, LearningRateScheduler, TensorBoard, ModelCheckpoint
+from keras.utils import to_categorical
 
+config = tf.ConfigProto( device_count = {'GPU': 1 , 'CPU': 56} ) 
+# config = tf.ConfigProto(device_count={'GPU': -1, 'CPU': 1})
+sess = tf.Session(config=config) 
+keras.backend.set_session(sess)
+from tensorflow.python.client import device_lib
+print(device_lib.list_local_devices())
+from keras import backend as K
+print(K.tensorflow_backend._get_available_gpus())
 
+kfold=KFold(n_splits=10)
 VOCAB_SIZE = 50000
 EMBEDDING_DIM = 300
+MAX_DOC_LEN = 40
 
 # helper function to find optimal number of PC (elbow method)
 def plot_explained_variance(X_train):
@@ -16,6 +49,7 @@ def plot_explained_variance(X_train):
     plt.show()
     
 def preprocess_pca(X_train, X_test, dim, r=None):
+    """ overwrites original features """
     pca = PCA(n_components=dim, random_state=r)
     X_train_pca = pca.fit_transform(X_train)
     X_test_pca = pca.transform(X_test)

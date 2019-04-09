@@ -12,6 +12,7 @@ import h5py
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
+from sklearn.preprocessing import StandardScaler
 
 import gzip
 import pickle
@@ -34,12 +35,14 @@ from keras.utils import to_categorical
 
 import nltk
 import gensim
+from gensim.test.utils import datapath
+from gensim.models import KeyedVectors
 import logging
 from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.corpus import stopwords
 #nltk.download('wordnet')
 #nltk.download('punkt')
 #nltk.download('stopwords')
-from nltk.corpus import stopwords
 
 # configure GPU
 config = tf.ConfigProto(device_count = {'GPU': 1 , 'CPU': 56})
@@ -142,7 +145,7 @@ class Features():
 		feature_color.rename({'qid': 'QID'}, axis=1, inplace=True)
 		feature_color.set_index('QID', inplace=True)
 		# join question features
-		question_features = feature_text.join(feature_color[['descriptions','tags','dominant_colors']],
+		features = feature_text.join(feature_color[['descriptions','tags','dominant_colors']],
 								   on='QID', how='outer')
 		# join question features with skill labels
 		target = target[['QID', 'IMG', 'QSN', 'TXT', 'OBJ', 'COL', 'CNT', 'OTH']]
@@ -150,7 +153,6 @@ class Features():
 		target = target.astype(dtype=str)
 		df = target.join(features, on='QID', how='inner')
 		df['descriptions'].astype(list)
-		print("Joined features with skill labels.")
 		return df
 	def concat_image_features(self):
 		if self.dataset == 'vizwiz':
@@ -215,7 +217,7 @@ class Features():
 		X_train = self.preprocess_text(self.question_features_train_df[feature_columns])
 		X_val   = self.preprocess_text(self.question_features_val_df[feature_columns])
 		self.question_features_train = self.remove_stop_words(X_train)
-		self.text_efatures_val   = self.remove_stop_words(X_val)
+		self.question_features_val   = self.remove_stop_words(X_val)
 	def create_question_feature_df(self):
 		if self.dataset == 'vizwiz':
 			self.question_features_train_df = self.join_question_feature_target(self.vizwiz_features_train_text, self.vizwiz_features_train_color, 
@@ -227,18 +229,14 @@ class Features():
 				self.vqa_targets_train)
 			self.question_features_val_df = self.join_question_feature_target(self.vqa_features_val_text, self.vqa_features_val_color,
 				self.vqa_targets_val)
-		print("--- Text features ---")
-		print("Dataest:", self.dataset)
-		print("Training:", self.train.shape)
-		print("Validation:", self.val.shape)
 	def set_targets(self):
-		if self.train is not None and self.val is not None:
-			self.txt_train = self.train['TXT'].values
-			self.col_train = self.train['COL'].values
-			self.cnt_train = self.train['CNT'].values
-			self.txt_val   = self.val['TXT'].values.astype('float32')
-			self.col_val   = self.val['COL'].values.astype('float32')
-			self.cnt_val   = self.val['CNT'].values.astype('float32')
+		if self.question_features_train_df is not None and self.question_features_val_df is not None:
+			self.txt_train = self.question_features_train_df['TXT'].values
+			self.col_train = self.question_features_train_df['COL'].values
+			self.cnt_train = self.question_features_train_df['CNT'].values
+			self.txt_val   = self.question_features_val_df['TXT'].values.astype('float32')
+			self.col_val   = self.question_features_val_df['COL'].values.astype('float32')
+			self.cnt_val   = self.question_features_val_df['CNT'].values.astype('float32')
 	def get_word_embedding(self):
 		# tokenize text features
 		tok = Tokenizer(num_words=VOCAB_SIZE, 
@@ -261,7 +259,7 @@ class Features():
 		self.val_seq = val_seq
 		# punkt sentence level tokenizer
 		sent_lst = [] 
-		for doc in question_features_train:
+		for doc in self.question_features_train:
 			sentences = nltk.tokenize.sent_tokenize(doc)
 			for sent in sentences:
 				word_lst = [w for w in nltk.tokenize.word_tokenize(sent) if w.isalnum()]
