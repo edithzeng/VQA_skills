@@ -19,7 +19,6 @@ from sklearn.model_selection import train_test_split, cross_val_score, KFold
 import keras
 from keras.preprocessing import image
 from keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
-from keras.applications.inception_v3 import InceptionV3
 import torchvision.models as models
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
@@ -32,30 +31,33 @@ from keras.applications.resnet50 import preprocess_input, decode_predictions
 import h5py
 
 def nn_feature_extract_vizwiz(df, logfile):
-	with h5py.File(logfile, "w-") as f:
-		for i in range(len(df)):
-			if (i%100 == 0):
-				print("{0:.0%}".format(float(i)/len(df)), flush=True)
-			row = df.iloc[i,:]
-			qid = str(row['QID'])
-			image_name = qid
-			image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
-			nn_feature_vector = feature_extract(image_url=image_url)
-			f[qid] = nn_feature_vector
+	f = h5py.File(logfile, 'w-')
+	dset = f.create_dataset('image_features', (1,1000), maxshape=(len(df)+1, 1000))
+	for i in range(len(df)):
+		if (i%100 == 0):
+			print("{0:.0%}".format(float(i)/len(df)), flush=True)
+		row = df.iloc[i,:]
+		qid = str(row['QID'])
+		image_name = qid
+		image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
+		nn_feature_vector = feature_extract(image_url=image_url)
+		dset[i,:] = nn_feature_vector
+		dset.resize(dset.shape[0]+1, axis=0)
 	print("Result written to", logfile)
 
-# TODO
+
 def nn_feature_extract_vqa(df, logfile):
 	f = h5py.File(logfile, 'w-')
+	dset = f.create_dataset('image_features', (1,1000), maxshape=(len(df)+1, 1000))
 	for i in range(len(df)):
 		if (i%100 == 0):
 			print("{0:.0%}".format(float(i)/len(df)), flush=True)
 		row = df.iloc[i, :]
-		qid = str(row['QID'])
 		image_name = str(row['IMG'])
 		image_path = "../../VQA_data/images/{}".format(image_name)
 		nn_feature_vector = feature_extract(image_path=image_path)
-		f[qid] = nn_feature_vector
+		dset[i,:] = nn_feature_vector
+		dset.resize(dset.shape[0]+1, axis=0)
 	print("Result written to", logfile)
 
 # ResNet34: He et al. https://goo.gl/KHQcso
