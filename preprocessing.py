@@ -1,17 +1,16 @@
-import * from text_feature_preprocessing
-import * from image_feature_preprocessing
+from extract_features import *
 
 X = Features('vqa')
-X.import_features()
+X.import_features(image_features=False)
 X.create_question_feature_df()
-text_features_train, text_features_val = X.set_features(['QSN', 'descriptions', 'tags', 'dominant_colors','handwritten_text', 'ocr_text'])
+X.set_features(['QSN', 'descriptions', 'tags', 'dominant_colors','handwritten_text', 'ocr_text'])
 X.set_targets()
 embedding_matrix = X.get_word_embeddings()
 train_seq = X.train_seq
 val_seq   = X.val_seq
 
 """ image features """
-train_img, val_img = X.concat_image_features()
+# train_img, val_img = X.concat_image_features()
 
 """ skill labels """
 n_classes = 3
@@ -41,7 +40,4 @@ print('Counting - 1:{} 0: {}'.format(np.count_nonzero(counting_y_val),
      len(counting_y_val)-np.count_nonzero(counting_y_val)))
 y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val, counting_y_val))
 
-# combine question and image features
-X_train = np.vstack((train_seq, train_img))
-X_val = np.vstack((val_seq, val_img))
 val_data = (X_val, y_val)

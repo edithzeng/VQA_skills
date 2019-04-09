@@ -86,13 +86,14 @@ class Features():
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_features_train_image = h5py.File("./nn_features_images/vizwiz_image_feature_train.hdf5", 'r')
-		self.vizwiz_features_val_image   = h5py.File("./nn_features_images/vizwiz_image_feature_val.hdf5", 'r')
 		self.vizwiz_targets_train = pd.read_csv('../vizwiz_skill_typ_train.csv', dtype={'QID':str},
 										delimiter=',', quotechar='"',
 										engine='python', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_targets_val = pd.read_csv('../vizwiz_skill_typ_val.csv', dtype={'QID':str},
 									delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
+	def import_vizwiz_image(self):
+		self.vizwiz_features_train_image = h5py.File("./nn_features_images/vizwiz_image_feature_train.hdf5", 'r')
+		self.vizwiz_features_val_image   = h5py.File("./nn_features_images/vizwiz_image_feature_val.hdf5", 'r')
 	def import_vqa_text(self):
 		self.vqa_features_train_color = pd.read_csv('azure_features_images/data/vqa_train_color_recognition.csv',
 									delimiter=';', engine='python', 
@@ -114,17 +115,22 @@ class Features():
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_features_train_image    = h5py.File("./nn_features_images/vqa_image_feature_train.hdf5", 'r')
-		self.vqa_feature_val_image       = h5py.File("./nn_features_images/vqa_image_feature_val.hdf5", 'r')
 		self.vqa_targets_train = pd.read_csv('../vqa_skill_typ_train.csv', dtype={'QID':str},
 										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_targets_val = pd.read_csv('../vqa_skill_typ_val.csv', dtype={'QID':str},
 										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-	def import_features(self):
+	def import_vqa_image(self):
+		self.vqa_features_train_image    = h5py.File("./nn_features_images/vqa_image_feature_train.hdf5", 'r')
+		self.vqa_feature_val_image       = h5py.File("./nn_features_images/vqa_image_feature_val.hdf5", 'r')
+	def import_features(self, image_features=False):
 		if self.dataset == 'vizwiz':
 			self.import_vizwiz_text()
+			if image_features:
+				self.import_vizwiz_image()
 		elif self.dataset == 'vqa':
 			self.import_vqa_text()
+			if image_features:
+				self.import_vqa_image()
 	def join_question_feature_target(self, feature_df_text, feature_df_color, target_df):
 		feature_text = copy.deepcopy(feature_df_text)
 		feature_color = copy.deepcopy(feature_df_color)
