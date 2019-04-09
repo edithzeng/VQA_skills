@@ -32,16 +32,16 @@ from keras.applications.resnet50 import preprocess_input, decode_predictions
 import h5py
 
 def nn_feature_extract_vizwiz(df, logfile):
-	f = h5py.File(logfile, "w-")
-	for i in range(len(df)):
-		if (i%100 == 0):
-			print("{0:.0%}".format(float(i)/len(df)), flush=True)
-		row = df.iloc[i,:]
-		qid = row['QID']
-		image_name = qid
-		image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
-		nn_feature_vector = feature_extract(image_url=image_url)
-		f[qid] = nn_feature_vector
+	with h5py.File(logfile, "w-") as f:
+		for i in range(len(df)):
+			if (i%100 == 0):
+				print("{0:.0%}".format(float(i)/len(df)), flush=True)
+			row = df.iloc[i,:]
+			qid = str(row['QID'])
+			image_name = qid
+			image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
+			nn_feature_vector = feature_extract(image_url=image_url)
+			f[qid] = nn_feature_vector
 	print("Result written to", logfile)
 
 # TODO
@@ -51,8 +51,8 @@ def nn_feature_extract_vqa(df, logfile):
 		if (i%100 == 0):
 			print("{0:.0%}".format(float(i)/len(df)), flush=True)
 		row = df.iloc[i, :]
-		qid = row['QID']
-		image_name = row['IMG']
+		qid = str(row['QID'])
+		image_name = str(row['IMG'])
 		image_path = "../../VQA_data/images/{}".format(image_name)
 		nn_feature_vector = feature_extract(image_path=image_path)
 		f[qid] = nn_feature_vector
