@@ -29,6 +29,7 @@ from torch.autograd import Variable
 import torchvision.models as models
 from keras.applications.resnet50 import preprocess_input, decode_predictions
 import h5py
+import tables
 
 def nn_feature_extract_vizwiz(df, logfile):
 	f = h5py.File(logfile, 'w-')
@@ -45,10 +46,9 @@ def nn_feature_extract_vizwiz(df, logfile):
 		dset.resize(dset.shape[0]+1, axis=0)
 	print("Result written to", logfile)
 
-
 def nn_feature_extract_vqa(df, logfile):
 	f = h5py.File(logfile, 'w-')
-	dset = f.create_dataset('image_features', (1,1000), maxshape=(len(df)+1, 1000))
+	dset = f.create_dataset('image_features', (1,1000), maxshape=(len(df)+1, 1000), chunks=True)
 	for i in range(len(df)):
 		if (i%100 == 0):
 			print("{0:.0%}".format(float(i)/len(df)), flush=True)
@@ -98,7 +98,7 @@ nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.hdf5")
 nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.hdf5")
 
 # extract image features for VizWiz training and validation data
-#vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
-#vizwiz_val = pd.read_csv("../../vizwiz_skill_typ_val.hdf5", skipinitialspace=True, engine='python')
-#nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.hdf5")
-#nn_feature_extract_vizwiz(vizwiz_val, "vizwiz_image_feature_val.csv")
+vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
+vizwiz_val = pd.read_csv("../../vizwiz_skill_typ_val.hdf5", skipinitialspace=True, engine='python')
+nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.hdf5")
+nn_feature_extract_vizwiz(vizwiz_val, "vizwiz_image_feature_val.hdf5")
