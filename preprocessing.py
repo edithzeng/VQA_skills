@@ -1,7 +1,7 @@
 from extract_features import *
 from utils import *
 
-def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors','handwritten_text','ocr_text'], verbose=True):
+def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors','handwritten_text','ocr_text'], n_classes=3, verbose=True):
 	if not isinstance(features, list):
 		raise ValueError("Check features list")
 	print("Dataset:", dataset, "\nFeatures:", features)
@@ -15,7 +15,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	val_seq   = X.val_seq
 	""" image features """
 	# train_img, val_img = X.concat_image_features()
-	n_classes = 3
+	n_classes = n_classes
 	# check training set labels' class distribution
 	text_recognition_y_train = np.asarray(X.txt_train).astype('float32')
 	color_recognition_y_train = np.asarray(X.col_train).astype('float32')
@@ -29,7 +29,10 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 		print('Counting - 1: {} 0: {}'.format(np.count_nonzero(counting_y_train), 
 	      len(counting_y_train)-np.count_nonzero(counting_y_train)))
 	# combine labels
-	y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train, counting_y_train))
+	if n_classes == 3:
+		y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train, counting_y_train))
+	else:
+		y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train))
 	# check validation class distribution
 	text_recognition_y_val = np.asarray(X.txt_val).astype('float32')
 	color_recognition_y_val = np.asarray(X.col_val).astype('float32')
@@ -42,8 +45,10 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	     len(color_recognition_y_val)-np.count_nonzero(color_recognition_y_val)))
 		print('Counting - 1:{} 0: {}'.format(np.count_nonzero(counting_y_val),
 	     len(counting_y_val)-np.count_nonzero(counting_y_val)))
+	if n_classes == 3:
 	y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val, counting_y_val))
-	#val_data = (X_val, y_val)
+	else:
+		y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val))
 	# PCA to reduce dimensionality
 	MAX_DOC_LEN = 40
 	if verbose:
