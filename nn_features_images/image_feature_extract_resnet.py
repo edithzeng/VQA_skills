@@ -37,7 +37,7 @@ def nn_feature_extract_vizwiz(df, logfile):
 	for i in range(len(df)):
 		if (i%100 == 0):
 			print("{0:.0%}".format(float(i)/len(df)), flush=True)
-		row = df.iloc[i,:]
+		row = df.iloc[i, :]
 		qid = str(row['QID'])
 		image_name = qid
 		image_url = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/%s'%image_name
@@ -74,7 +74,7 @@ def feature_extract(image_url=None, image_path=None):
 											 transforms.CenterCrop(224),
 											 transforms.ToTensor(),
 											 transforms.Normalize(mean=[0.485, 0.456, 0.406],
-																  std=[0.229, 0.224, 0.225])])
+																std=[0.229, 0.224, 0.225])])
 		img = transform_pipeline(img)
 		img = img.unsqueeze(0)
 		img = Variable(img)
@@ -94,11 +94,11 @@ def feature_extract(image_url=None, image_path=None):
 # extract features for VQA training and validation data 
 vqa_train = pd.read_csv('../../vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
 vqa_val = pd.read_csv('../../vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
-nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.hdf5")
-nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.hdf5")
+nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.h5")
+nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.h5")
 
 # extract image features for VizWiz training and validation data
 vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
 vizwiz_val = pd.read_csv("../../vizwiz_skill_typ_val.hdf5", skipinitialspace=True, engine='python')
-nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.hdf5")
-nn_feature_extract_vizwiz(vizwiz_val, "vizwiz_image_feature_val.hdf5")
+nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.h5")
+nn_feature_extract_vizwiz(vizwiz_val, "vizwiz_image_feature_val.h5")

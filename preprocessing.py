@@ -46,7 +46,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 		print('Counting - 1:{} 0: {}'.format(np.count_nonzero(counting_y_val),
 	     len(counting_y_val)-np.count_nonzero(counting_y_val)))
 	if n_classes == 3:
-	y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val, counting_y_val))
+		y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val, counting_y_val))
 	else:
 		y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val))
 	# PCA to reduce dimensionality
