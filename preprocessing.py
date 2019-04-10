@@ -23,7 +23,6 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	color_recognition_y_train = np.asarray(X.col_train).astype('float32')
 	counting_y_train = np.asarray(X.cnt_train).astype('float32')
 	train_dict = {"text": text_recognition_y_train, "color": color_recognition_y_train, 'counting': counting_y_train}
-	val_dict = {"text": text_recognition_y_val, "color": color_recognition_y_val, 'counting': counting_y_val}
 	if verbose:
 		print('Number of training samples each class: ')
 		print('Text recognition - 1: {} 0: {}'.format(np.count_nonzero(text_recognition_y_train), 
@@ -44,6 +43,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	text_recognition_y_val = np.asarray(X.txt_val).astype('float32')
 	color_recognition_y_val = np.asarray(X.col_val).astype('float32')
 	counting_y_val = np.asarray(X.cnt_val).astype('float32')
+	val_dict = {"text": text_recognition_y_val, "color": color_recognition_y_val, 'counting': counting_y_val}
 	if verbose:
 		print('Number of validation samples each class: ')
 		print('Text recognition - 1: {} 0: {}'.format(np.count_nonzero(text_recognition_y_val), 
