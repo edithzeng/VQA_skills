@@ -1,7 +1,7 @@
 from extract_features import *
 from utils import *
 
-def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors','handwritten_text','ocr_text'], n_classes=3, preditor=None, verbose=True):
+def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors','handwritten_text','ocr_text'], n_classes=3, skill=None, verbose=True):
 
 	if not isinstance(features, list):
 		raise ValueError("Check features list")
@@ -35,7 +35,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 
 	# combine labels
 	if n_classes == 1:
-		y_train = train_dict[predictor]
+		y_train = train_dict[skill]
 	elif n_classes == 2:
 		y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train))
 	elif n_classes == 3:
@@ -53,7 +53,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 		print('Counting - 1:{} 0: {}'.format(np.count_nonzero(counting_y_val),
 	     len(counting_y_val)-np.count_nonzero(counting_y_val)))
 	if n_classes == 1:
-		y_val = val_dict[predictor]
+		y_val = val_dict[skill]
 	elif n_classes == 2:
 		y_val = np.column_stack((text_recognition_y_val, color_recognition_y_val)) 
 	elif n_classes == 3:
