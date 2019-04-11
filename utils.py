@@ -125,6 +125,7 @@ def color_recognition_classifier(train_seq, embedding_matrix,
 	history = History()
 	logfile = './LSTM/color/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
 	csv_logger = CSVLogger(logfile, separator=',', append=True)
+	checkpoint = ModelCheckpoint(filepath='./LSTM/color/{}_{}_{}_{}_checkpoint.h5', verbose=1, save_best_only=True)
 	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
 	print("Log file:", logfile)
 	t1 = time.time()
@@ -134,7 +135,7 @@ def color_recognition_classifier(train_seq, embedding_matrix,
 			epochs=num_epochs,
 			validation_data=val_data,
 			shuffle=True,
-			callbacks=[scheduler, history, csv_logger],
+			callbacks=[scheduler, history, csv_logger, checkpoint],
 			verbose=verbose)
 	t2 = time.time()
 	# save h5
@@ -142,6 +143,7 @@ def color_recognition_classifier(train_seq, embedding_matrix,
 	with open('./LSTM/color/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
 		res_file.write(str(history.history))
 	return model, history
+
 
 # classifier
 def skill_predictor(train_seq, embedding_matrix,
