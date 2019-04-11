@@ -115,7 +115,7 @@ def color_recognition_classifier(train_seq, embedding_matrix,
 	model.add(embedding_layer)
 	model.add(Activation('tanh'))
 	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
+	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
 	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
 	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
 	model.add(Dense(1, activation='sigmoid'))
@@ -123,7 +123,7 @@ def color_recognition_classifier(train_seq, embedding_matrix,
 				  optimizer=optimizer_param,
 				  metrics=['acc'])
 	history = History()
-	logfile = './LSTM/text/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
+	logfile = './LSTM/color/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
 	csv_logger = CSVLogger(logfile, separator=',', append=True)
 	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
 	print("Log file:", logfile)
@@ -138,8 +138,8 @@ def color_recognition_classifier(train_seq, embedding_matrix,
 			verbose=verbose)
 	t2 = time.time()
 	# save h5
-	model.save('./LSTM/text/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
-	with open('./LSTM/text/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
+	model.save('./LSTM/color/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
+	with open('./LSTM/color/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
 		res_file.write(str(history.history))
 	return model, history
 
@@ -171,7 +171,7 @@ def skill_predictor(train_seq, embedding_matrix,
 	history = History()
 	logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
 	csv_logger = CSVLogger(logfile, separator=',', append=True)
-	# checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
+	# checkpoint = ModelCheckpoint(filepath='./LSTM/weights.h5', verbose=1, save_best_only=True)
 	# exponential scheduling (Andrew Senior et al., 2013) for Nesterov
 	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
 	# stop = EarlyStopping(patience=200)
