@@ -55,10 +55,8 @@ def preprocess_pca(X_train, X_test, dim, r=None):
 	X_test_pca = pca.transform(X_test)
 	return X_train_pca, X_test_pca
 
-<<<<<<< HEAD
-=======
+
 # classifier
->>>>>>> ed17da600e1a0f1831b47ee014a709082fa7299f
 def skill_predictor(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=1e-7, n_classes=2, MAX_DOC_LEN=40, verbose=0):
