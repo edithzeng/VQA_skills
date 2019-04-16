@@ -55,6 +55,7 @@ def preprocess_pca(X_train, X_test, dim, r=None):
 	X_test_pca = pca.transform(X_test)
 	return X_train_pca, X_test_pca
 
+
 # classifier
 def skill_predictor(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
