@@ -55,6 +55,7 @@ def preprocess_pca(X_train, X_test, dim, r=None):
 	X_test_pca = pca.transform(X_test)
 	return X_train_pca, X_test_pca
 
+# classifier
 def skill_predictor(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=1e-7, n_classes=2, MAX_DOC_LEN=40, verbose=0):
@@ -82,7 +83,7 @@ def skill_predictor(train_seq, embedding_matrix,
 	history = History()
 	logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
 	csv_logger = CSVLogger(logfile, separator=',', append=True)
-	# checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
+	# checkpoint = ModelCheckpoint(filepath='./LSTM/weights.h5', verbose=1, save_best_only=True)
 	# exponential scheduling (Andrew Senior et al., 2013) for Nesterov
 	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
 	# stop = EarlyStopping(patience=200)
