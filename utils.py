@@ -65,7 +65,7 @@ def skill_predictor(train_seq, embedding_matrix,
 	embedding_layer = Embedding(input_dim=VOCAB_SIZE,
 								output_dim=EMBEDDING_DIM,
 								input_length=MAX_DOC_LEN,
-								trainable=False,
+								trainable=True,
 								mask_zero=False,
 								embeddings_regularizer=l2_reg,
 								weights=[embedding_matrix])
@@ -73,11 +73,11 @@ def skill_predictor(train_seq, embedding_matrix,
 	model.add(embedding_layer)
 	model.add(Activation('tanh'))
 	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
-	model.add(BatchNormalization())
 	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
+	#model.add(BatchNormalization())
+	#model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
+	#model.add(BatchNormalization())
+	#model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
 	model.add(BatchNormalization())
 	model.add(Dense(n_classes, activation='sigmoid'))
 	model.compile(loss='binary_crossentropy',
