@@ -74,8 +74,11 @@ def skill_predictor(train_seq, embedding_matrix,
 	model.add(Activation('tanh'))
 	model.add(BatchNormalization())
 	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
+	model.add(BatchNormalization())
 	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
+	model.add(BatchNormalization())
 	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
+	model.add(BatchNormalization())
 	model.add(Dense(n_classes, activation='sigmoid'))
 	model.compile(loss='binary_crossentropy',
 				  optimizer=optimizer_param,
