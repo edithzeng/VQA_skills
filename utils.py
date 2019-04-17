@@ -73,11 +73,8 @@ def skill_predictor(train_seq, embedding_matrix,
 	model.add(embedding_layer)
 	model.add(Activation('tanh'))
 	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-	#model.add(BatchNormalization())
-	#model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-	#model.add(BatchNormalization())
-	#model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
+	#model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, kernel_regularizer=l2_reg)))
+	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg)))
 	model.add(BatchNormalization())
 	model.add(Dense(n_classes, activation='sigmoid'))
 	model.compile(loss='binary_crossentropy',
@@ -87,10 +84,8 @@ def skill_predictor(train_seq, embedding_matrix,
 	history = History()
 	logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
 	csv_logger = CSVLogger(logfile, separator=',', append=True)
-	# checkpoint = ModelCheckpoint(filepath='./LSTM/weights.h5', verbose=1, save_best_only=True)
 	# exponential scheduling (Andrew Senior et al., 2013) for Nesterov
 	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
-	# stop = EarlyStopping(patience=200)
 	print("Log file:", logfile)
 
 	t1 = time.time()
