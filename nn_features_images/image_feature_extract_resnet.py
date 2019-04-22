@@ -14,11 +14,11 @@ import sys
 import urllib.error as error
 from pprint import pprint
 import skimage
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split, cross_val_score, KFold
 import keras
 from keras.preprocessing import image
-from keras.applications.resnet50 import ResNet50, preprocess_input, decode_predictions
+from keras.applications.resnet50 import ResNet50
+from keras.applications.imagenet_utils import preprocess_input
+from keras.models import Model
 import torchvision.models as models
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils
@@ -27,15 +27,14 @@ import PIL
 from PIL import Image
 from torch.autograd import Variable
 import torchvision.models as models
-from keras.applications.resnet50 import preprocess_input, decode_predictions
 import h5py
 import tables
 
 def nn_feature_extract_vizwiz(df, logfile):
 	f = h5py.File(logfile, 'w-')
-	dset = f.create_dataset('image_features', (1,1000), maxshape=(len(df)+1, 1000))
+	dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
 	for i in range(len(df)):
-		if (i%100 == 0):
+		if (i%1000 == 0):
 			print("{0:.0%}".format(float(i)/len(df)), flush=True)
 		row = df.iloc[i, :]
 		qid = str(row['QID'])
@@ -48,9 +47,9 @@ def nn_feature_extract_vizwiz(df, logfile):
 
 def nn_feature_extract_vqa(df, logfile):
 	f = h5py.File(logfile, 'w-')
-	dset = f.create_dataset('image_features', (1,1000), maxshape=(len(df)+1, 1000), chunks=True)
+	dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
 	for i in range(len(df)):
-		# if (i%10000 == 0):
+		if (i == 1): break
 			#print("{0:.0%}".format(float(i)/len(df)), flush=True)
 		row = df.iloc[i, :]
 		image_name = str(row['IMG'])
@@ -85,18 +84,23 @@ def feature_extract(image_url=None, image_path=None):
 		img = image.img_to_array(img)
 		img = np.expand_dims(img, axis=0)
 		img = preprocess_input(img)
-	base_model = ResNet50(weights='imagenet')
-	model = Model(input=base_model.input, output=base_model.get_layer('fc2').output)
-	fc2_features = model.predict(img)
-	return fc2_features
+	# base_model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
+	base_model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
+	#model = Model(input=base_model.input, output=base_model.get_layer('activation_49').output)
+	features = base_model.predict(img)
+	print(features.shape)
+	return features
 
 
 
 # extract features for VQA training and validation data 
 vqa_train = pd.read_csv('../../vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
-# vqa_val = pd.read_csv('../../vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
 nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.h5")
-# nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.h5")
+print("Finished VQA training set image feature extraction")
+
+vqa_val = pd.read_csv('../../vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
+nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.h5")
+print("Finished VQA validation set image feature extraction")
 
 # extract image features for VizWiz training and validation data
 #vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
