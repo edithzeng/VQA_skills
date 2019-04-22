@@ -35,7 +35,7 @@ def nn_feature_extract_vizwiz(df, logfile):
 	dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
 	for i in range(len(df)):
 		if (i%1000 == 0):
-			print("{0:.0%}".format(float(i)/len(df)), flush=True)
+			print("{0:.0%}".format(float(i)/len(df)))
 		row = df.iloc[i, :]
 		qid = str(row['QID'])
 		image_name = qid
@@ -49,8 +49,8 @@ def nn_feature_extract_vqa(df, logfile):
 	f = h5py.File(logfile, 'w-')
 	dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
 	for i in range(len(df)):
-		if (i == 1): break
-			#print("{0:.0%}".format(float(i)/len(df)), flush=True)
+		if (i%1000 == 0):
+			print("{0:.0%}".format(float(i)/len(df)))
 		row = df.iloc[i, :]
 		image_name = str(row['IMG'])
 		image_path = "../../VQA_data/images/{}".format(image_name)
