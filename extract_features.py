@@ -238,7 +238,7 @@ class Features():
 			self.txt_val   = self.question_features_val_df['TXT'].values.astype('float32')
 			self.col_val   = self.question_features_val_df['COL'].values.astype('float32')
 			self.cnt_val   = self.question_features_val_df['CNT'].values.astype('float32')
-	def get_word_embedding(self):
+	def get_word_embedding(self, pretrained_embedding):
 		# tokenize text features
 		tok = Tokenizer(num_words=VOCAB_SIZE, 
 						filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n',
@@ -265,10 +265,14 @@ class Features():
 			for sent in sentences:
 				word_lst = [w for w in nltk.tokenize.word_tokenize(sent) if w.isalnum()]
 				sent_lst.append(word_lst)
-		googlenews_corpus = '/anaconda/envs/py35/lib/python3.5/site-packages/gensim/test/test_data/GoogleNews-vectors-negative300.bin'
-		# load pre-trained word2vec on GoogleNews (https://code.google.com/archive/p/word2vec/)
-		logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-		word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(datapath(googlenews_corpus), binary=True)
+		if pretrained_embedding:
+			googlenews_corpus = '/anaconda/envs/py35/lib/python3.5/site-packages/gensim/test/test_data/GoogleNews-vectors-negative300.bin'
+			# load pre-trained word2vec on GoogleNews (https://code.google.com/archive/p/word2vec/)
+			logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+			word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(datapath(googlenews_corpus), binary=True)
+		else:
+			logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+			word2vec_model = gensim.models.Word2Vec(sentences=sent_lst, min_count=6, size=EMBEDDING_DIM, sg=1, workers=os.cpu_count())
 		# get word vetors
 		embeddings_index = {}
 		for word in word2vec_model.wv.vocab:
