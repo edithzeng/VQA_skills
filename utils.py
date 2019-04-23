@@ -34,8 +34,8 @@ from keras import backend as K
 print(K.tensorflow_backend._get_available_gpus())
 
 kfold=KFold(n_splits=10)
-VOCAB_SIZE = 50000
-EMBEDDING_DIM = 300
+VOCAB_SIZE = 3000 # 50000
+EMBEDDING_DIM = 100 #300
 MAX_DOC_LEN = 40
 
 # helper function to find optimal number of PC (elbow method)
