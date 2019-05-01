@@ -29,8 +29,10 @@ from torch.autograd import Variable
 import torchvision.models as models
 import h5py
 import tables
+from sklearn.decomposition import PCA
 
 def nn_feature_extract_vizwiz(df, logfile):
+# TODO: PCA
 	f = h5py.File(logfile, 'w-')
 	dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
 	for i in range(len(df)):
@@ -47,7 +49,8 @@ def nn_feature_extract_vizwiz(df, logfile):
 
 def nn_feature_extract_vqa(df, logfile):
 	f = h5py.File(logfile, 'w-')
-	dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
+	# dset = f.create_dataset('image_features', (1,2048), maxshape=(len(df), 2048), chunks=True)
+	dset = f.create_dataset('image_features', (1,50), maxshape=(len(df), 50), chunks=True)
 	for i in range(len(df)):
 		if (i%1000 == 0):
 			print("{0:.0%}".format(float(i)/len(df)))
@@ -55,6 +58,8 @@ def nn_feature_extract_vqa(df, logfile):
 		image_name = str(row['IMG'])
 		image_path = "../../VQA_data/images/{}".format(image_name)
 		nn_feature_vector = feature_extract(image_path=image_path)
+		pca = PCA(n_components=50)
+		nn_feature_vector = pca.fit_transform(nn_feature_vector)
 		dset[i,:] = nn_feature_vector
 		dset.resize(dset.shape[0]+1, axis=0)
 	print("Result written to", logfile)
