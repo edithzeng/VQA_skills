@@ -1,6 +1,6 @@
 # VQA skills
 
-This repository holds the codes for my master's report to be completed in May 2019.
+This repository holds the codes for my master's report completed in May 2019 for my MSIS degree and specialization in Machine Learning from UT-Austin. The dataset used in this project will be published with the paper.
 
 This research contributes to the understanding of the unique information needs and challenges faced by blind users with the goal to improve the status quo of visual assistive technologies.
 
