@@ -16,3 +16,4 @@ tensorflow core 1.13 <br />
 keras 2.2.4 <br />
 scipy 1.2.0 <br />
 pandas 0.24.0 <br />
+cv2
