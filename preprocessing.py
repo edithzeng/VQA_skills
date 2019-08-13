@@ -1,7 +1,7 @@
 from extract_features import *
 from utils import *
 
-def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors','handwritten_text','ocr_text'], n_classes=3, skill=None, verbose=True, pretrained_embedding=False):
+def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors','handwritten_text','ocr_text'], n_classes=3, skill=None, verbose=True):
 
 	if not isinstance(features, list):
 		raise ValueError("Check features list")
@@ -12,7 +12,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	X.create_question_feature_df()
 	X.set_features(features)
 	X.set_targets()
-	embedding_matrix = X.get_word_embedding(pretrained_embedding)
+	embedding_matrix = X.get_word_embedding()
 	train_seq = X.train_seq
 	val_seq   = X.val_seq
 
