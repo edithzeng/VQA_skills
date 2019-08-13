@@ -1,0 +1,12 @@
+scipy
+numpy
+pandas
+seaborn
+matplotlib
+scikit-image
+sklearn
+tensorflow
+#tensorflow-gpu
+keras
+nltk
+gensim

@@ -17,10 +17,13 @@ from matplotlib.patches import Rectangle
 from PIL import Image
 from io import BytesIO
 
+""" 
+    Analyzes image with Azure pretrained model,
+    with the goal to perform color recognition
+"""
+
 def main():
     pass
-if __name__ == "__main__":
-    main()
 
 def analyze_image(vision_base_url, image_url, key, local_image=False):
     vision_analyze_url = vision_base_url + 'analyze'
@@ -41,8 +44,7 @@ def analyze_image(vision_base_url, image_url, key, local_image=False):
 
 def write_to_file(vision_base_url, key, df, output_file_path, dataset): 
     if (not (isinstance(df,pd.DataFrame) and dataset in ['vizwiz','vqa'])):
-        print("Check argv")
-        raise ValueError
+        raise ValueError('Check arguments')
     file = open(output_file_path, 'w+')
     file.write("qid;question;descriptions;tags;dominant_colors\n")
     local_image = False
@@ -70,3 +72,6 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
         n += 1
     file.close()
     print("Color recognition results for {} written to {}".format(dataset, output_file_path))
+
+if __name__ == "__main__":
+    main()
