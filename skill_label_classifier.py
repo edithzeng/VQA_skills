@@ -139,11 +139,11 @@ class SkillClassifier():
 		self.vizwiz_targets_train = pd.read_csv('../vizwiz_skill_typ_train.csv', dtype={'QID':str},
 										delimiter=',', quotechar='"',
 										engine='python', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_val = pd.read_csv('../vizwiz_skill_typ_val.csv', dtype={'QID':str},
+		self.vizwiz_targets_val = pd.read_csv('../data/vizwiz_skill_typ_val.csv', dtype={'QID':str},
 									delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_targets_train = pd.read_csv('../vqa_skill_typ_train.csv', dtype={'QID':str},
+		self.vqa_targets_train = pd.read_csv('../data/vqa_skill_typ_train.csv', dtype={'QID':str},
 										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_targets_val = pd.read_csv('../vqa_skill_typ_val.csv', dtype={'QID':str},
+		self.vqa_targets_val = pd.read_csv('../data/vqa_skill_typ_val.csv', dtype={'QID':str},
 										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 	def join_feature_target(self, feature_df_text, feature_df_color, target_df):
 		feature_text = copy.deepcopy(feature_df_text)
