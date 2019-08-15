@@ -17,7 +17,7 @@ write_to_file(vision_base_url, key, vqa_val, "vqa_val_color_recognition.csv", 'v
 write_to_file(vision_base_url, key, vizwiz_val, "vizwiz_val_color_recognition.csv", 'vizwiz')
 
 # test 
-vizwiz_test = pd.read_csv("../../vizwiz_skill_typ_test.csv", skipinitialspace=True, engine='python')
+vizwiz_test = pd.read_csv("../../data/vizwiz_skill_typ_test.csv", skipinitialspace=True, engine='python')
 vqa_test = pd.read_csv('../../data/vqa_skill_typ_test.csv', skipinitialspace=True, engine='python')
 write_to_file(vision_base_url, key, vqa_test, "vqa_test_color_recognition.csv", 'vqa')
 write_to_file(vision_base_url, key, vizwiz_test, "vizwiz_test_color_recognition.csv", 'vizwiz')
