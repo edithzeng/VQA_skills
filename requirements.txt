@@ -10,3 +10,6 @@ tensorflow
 keras
 nltk
 gensim
+opencv-python
+sudo apt-get install libsm6 libxrender1 libfontconfig1
+opencv-contrib-python
