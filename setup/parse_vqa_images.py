@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-os.chdir('..')
+os.chdir('../..')
 
 vqa_train = pd.read_csv('./data/three_vote_threshold/vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
 vqa_val = pd.read_csv('./data/three_vote_threshold/vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
