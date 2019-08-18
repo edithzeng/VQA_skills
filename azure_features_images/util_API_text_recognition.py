@@ -110,7 +110,7 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
         qid = row[df.columns.get_loc('QID')]
         img = row[df.columns.get_loc('IMG')]
         qsn = row[df.columns.get_loc('QSN')]
-        image_url  = "{}{}".format(image_url_base,img)
+        image_url = os.path.join(image_url_base, img)
         try:
             ocr_text   = ocr_request(vision_base_url, key, image_url, local_image)
             handwritten_text = recognize_handwritten_text(vision_base_url, key, image_url, local_image)
