@@ -51,14 +51,14 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
     image_url_base = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/'
     if dataset == 'vqa':
         local_image = True
-        image_url_base = '../../VQA_data/images/'
+        image_url_base = os.path.abspath('../../VQA_data/image/')
     n = 1
     for i, row in df.iterrows():
         if (n%100 == 0):
             print("{0:.0%}".format(float(n)/len(df)), flush=True)
-        qid = row[1]
-        img = row[2]
-        qsn = row[3]
+        qid = row[df.columns.get_loc('QID')]
+        img = row[df.columns.get_loc('IMG')]
+        qsn = row[df.columns.get_loc('QSN')]
         image_url      = os.path.join(image_url_base, img)
         try:
             result     = analyze_image(vision_base_url, image_url, key, local_image)
