@@ -37,7 +37,7 @@ from sklearn.metrics import roc_auc_score
 
 def df_cutoff(df):
     """ separate large dataframes to chunks """
-    """ Azure limit up to 1000 records per request """\
+    """ Azure limit up to 1000 records per request """
     buckets = len(df) // 1000
     if buckets > 0:
         chunks = [df.iloc[1000*i:min(1000*(i+1),len(df)),:] for i in range(buckets)]
