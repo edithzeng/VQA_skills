@@ -56,10 +56,10 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
     for i, row in df.iterrows():
         if (n%100 == 0):
             print("{0:.0%}".format(float(n)/len(df)), flush=True)
-        qid = row[0]
-        img = row[1]
-        qsn = row[2]
-        image_url      = "{}{}".format(image_url_base, img)
+        qid = row[1]
+        img = row[2]
+        qsn = row[3]
+        image_url      = os.path.join(image_url_base, img)
         try:
             result     = analyze_image(vision_base_url, image_url, key, local_image)
             tags       = result['description']['tags']

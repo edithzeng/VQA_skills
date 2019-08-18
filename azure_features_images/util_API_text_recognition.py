@@ -107,9 +107,9 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
     for i, row in df.iterrows():
         if (n%100 == 0):
             print("{0:.0%}".format(float(n)/len(df)), flush=True)
-        qid = row[0]
-        img = row[1]
-        qsn = row[2]
+        qid = row[1]
+        img = row[2]
+        qsn = row[3]
         image_url  = "{}{}".format(image_url_base,img)
         try:
             ocr_text   = ocr_request(vision_base_url, key, image_url, local_image)
