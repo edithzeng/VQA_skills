@@ -64,9 +64,15 @@ def process_questions(df):
     for i, row in df.iterrows():
         curr = {}
         curr["language"] = "en"
-        curr["id"] = row[0]
-        curr["text"] = row[2]
-        curr["OBJ"], curr["TXT"], curr["COL"], curr["CNT"], curr["OTH"] = row[5], row[4], row[6], row[7], row[8]
+
+        df.columns.get_loc()
+        curr{"id"] = row[df.columns.get_loc("QID")]
+        curr["text"] = row[df.columns.get_loc("QSN")]
+        curr["OBJ"] = row[df.columns.get_loc("OBJ")]
+        curr["TXT"] = row[df.columns.get_loc("TXT")]
+        curr["COL"] = row[df.columns.get_loc("COL")]
+        curr["CNT"] = row[df.columns.get_loc("CNT")]
+        curr["OTH"] = row[df.columns.get_loc("OTH")]
         arr.append(curr)
     documents = {'documents': arr}
     return documents
