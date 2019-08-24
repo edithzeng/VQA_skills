@@ -107,11 +107,21 @@ class SkillClassifier():
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_features_val_color = pd.read_csv('azure_features_images/data/vizwiz_val_color_recognition.csv',
-										delimiter=';', engine='python',
-										dtype={'qid':str, 'question':str, 'descriptions':list,
-											'tags':list, 'dominant_colors':list},
-										quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+									delimiter=';', engine='python',
+									dtype={'qid':str, 'question':str, 'descriptions':list,
+										'tags':list, 'dominant_colors':list},
+									quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vizwiz_features_val_text = pd.read_csv('azure_features_images/data/vizwiz_val_text_recognition.csv',
+									  delimiter=';', engine='python', 
+									  dtype={'qid':str, 'question':str, 'descriptions':list,
+											'ocr_text':list, 'handwritten_text':list},
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+                self.vizwiz_features_test_color = pd.read_csv('azure_features_images/data/vizwiz_test_color_recognition.csv',
+									  delimiter=';', engine='python', 
+									  dtype={'qid':str, 'question':str, 'descriptions':list,
+											'ocr_text':list, 'handwritten_text':list},
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+                self.vizwiz_features_test_text = pd.read_csv('azure_features_images/data/vizwiz_test_text_recognition.csv',
 									  delimiter=';', engine='python', 
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
@@ -136,15 +146,31 @@ class SkillClassifier():
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_train = pd.read_csv('../vizwiz_skill_typ_train.csv', dtype={'QID':str},
+		self.vqa_features_test_color = pd.read_csv('azure_features_images/data/vqa_test_color_recognition.csv',
+									delimiter=';', engine='python',
+										dtype={'qid':str, 'question':str, 'descriptions':list,
+											'tags':list, 'dominant_colors':list},
+										quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vqa_features_test_text = pd.read_csv('azure_features_images/data/vqa_test_text_recognition.csv',
+									  delimiter=';', engine='python', 
+									  dtype={'qid':str, 'question':str, 'descriptions':list,
+											'ocr_text':list, 'handwritten_text':list},
+									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_targets_train = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_train.csv', dtype={'QID':str},
 										delimiter=',', quotechar='"',
 										engine='python', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_val = pd.read_csv('../data/vizwiz_skill_typ_val.csv', dtype={'QID':str},
-									delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_targets_train = pd.read_csv('../data/vqa_skill_typ_train.csv', dtype={'QID':str},
-										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_targets_val = pd.read_csv('../data/vqa_skill_typ_val.csv', dtype={'QID':str},
-										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_targets_val = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_val.csv', dtype={'QID':str},
+							delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_targets_test = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_test.csv', dtype={'QID':str},
+							delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
+		self.vqa_targets_train = pd.read_csv('../data/three_vote_threshold/vqa_skill_typ_train.csv', dtype={'QID':str},
+							engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vqa_targets_val = pd.read_csv('../data/three_vote_threshold/vqa_skill_typ_val.csv', dtype={'QID':str},
+							engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+                self.vqa_targets_test = pd.read_csv('../data/three_vote_threshold/vqa_skill_typ_test.csv', dtype={'QID':str},
+							engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+
+
 	def join_feature_target(self, feature_df_text, feature_df_color, target_df):
 		feature_text = copy.deepcopy(feature_df_text)
 		feature_color = copy.deepcopy(feature_df_color)
@@ -167,21 +193,39 @@ class SkillClassifier():
 		df['descriptions'].astype(list)
 		print("Joined features with skill labels.")
 		return df
+
+
 	def create_df(self):
 		self.vizwiz_train = self.join_feature_target(self.vizwiz_features_train_text, self.vizwiz_features_train_color, 
 			self.vizwiz_targets_train)
 		self.vizwiz_val   = self.join_feature_target(self.vizwiz_features_val_text, self.vizwiz_features_val_color,
 			self.vizwiz_targets_val)
+                self.vizwiz_test  = self.join_feature_target(self.vizwiz_features_test_text, self.vizwiz_features_test_color,
+                        self.vizwiz_targets_test)
 		self.vqa_train    = self.join_feature_target(self.vqa_features_train_text, self.vqa_features_train_color, 
 			self.vqa_targets_train)
 		self.vqa_val      = self.join_feature_target(self.vqa_features_val_text, self.vqa_features_val_color,
 			self.vqa_targets_val)
+                self.vqa_test     = self.join_feature_target(self.vqa_features_test_text, self.vqa_features_text_color,
+                        self.vqa_targets_test)
+                self.__create_binary_flags()
 		print("VizWiz training shape:", self.vizwiz_train.shape)
 		print("VQA training shape:", self.vqa_train.shape)
 		print("Total training rows:", self.vizwiz_train.shape[0] + self.vqa_train.shape[0])
-		print("VizWiz validation shape:{}\nVQA validation shape:{}".format(self.vizwiz_val.shape,self.vqa_val.shape))
+		print("VizWiz validation shape:{}\nVQA validation shape:{}".format(self.vizwiz_val. shape,self.vqa_val.shape))
 		print("Total validation rows:", self.vizwiz_val.shape[0] + self.vqa_val.shape[0])
+		print("VizWiz test shape:{}\nVQA test shape:{}".format(self.vizwiz_test.shape, self.vqa_test.shape))
+		print("Total test rows:", self.vizwiz_test.shape[0] + self.vqa_test.shape[0])
 
+        def __create_binary_flags(self): # based on 3 vote threshold
+                create_flag = lambda x: x = int(1) if x >= 3 else int(0)
+                dsets = [self.vizwiz_train, self.vizwiz_val, self.vizwiz_test,
+                        self.vqa_train, self.vqa_val, self.vqa_test]
+                for d in dsets:
+                    d["COL_FLAG"] = d["COL"].apply(create_flag)
+                    d["TXT_FLAG"] = d["TXT"].apply(create_flag)
+                    d["CNT_FLAG"] = d["CNT"].apply(create_flag)
+                
 	def choose_dataset(self, dataset):
 		if dataset == 'vizwiz':
 			self.train = self.vizwiz_train
@@ -219,19 +263,27 @@ class SkillClassifier():
 			op.append(doc)
 		op = np.asarray(op)
 		return op
+
 	def set_targets(self):
 		if self.train is not None and self.val is not None:
-			self.txt_train = self.train['TXT'].values
-			self.col_train = self.train['COL'].values
-			self.cnt_train = self.train['CNT'].values
-			self.txt_val   = self.val['TXT'].values.astype('float32')
-			self.col_val   = self.val['COL'].values.astype('float32')
-			self.cnt_val   = self.val['CNT'].values.astype('float32')
+			self.txt_train = self.train['TXT_FLAG'].values
+			self.col_train = self.train['COL_FLAG'].values
+			self.cnt_train = self.train['CNT_FLAG'].values
+			self.txt_val   = self.val['TXT_FLAG'].values.astype('float32')
+			self.col_val   = self.val['COL_FLAG'].values.astype('float32')
+			self.cnt_val   = self.val['CNT_FLAG'].values.astype('float32')
+                       	self.txt_test  = self.test['TXT_FLAG'].values.astype('float32')
+			self.col_test  = self.test['COL_FLAG'].values.astype('float32')
+			self.cnt_test  = self.test['CNT_FLAG'].values.astype('float32')
+
 	def set_features(self, feature_columns):
 		features_train = self.preprocess_text(self.train[feature_columns])
 		features_val   = self.preprocess_text(self.val[feature_columns])
+                features_test  = self.preprocess_text(self.test[feature_columns])
 		self.features_train = self.remove_stop_words(features_train)
 		self.features_val   = self.remove_stop_words(features_val)
+                self.features_test  = self.remove_stop_words(features_test)
+
 	def lem(self, s):
 		arr = s.split(" ")
 		lem = WordNetLemmatizer()
@@ -240,17 +292,19 @@ class SkillClassifier():
 			word = lem.lemmatize(w) + ' '
 			op += word
 		return op
+
 	def remove_stop_words(self, features):
 		stop_words = set(stopwords.words('english'))
 		cleansed = [w for w in features if not w in stop_words]
 		return cleansed
 
 
-
+###############################################################################
 def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
 	num_epochs, optimizer_param, regularization=1e-7, n_classes=3, verbose=0):
-    l2_reg = regularizers.l2(regularization)
+        l2_reg = regularizers.l2(regularization)
+
     # init model
     embedding_layer = Embedding(VOCAB_SIZE,
                                 EMBEDDING_DIM,
