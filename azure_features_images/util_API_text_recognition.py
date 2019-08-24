@@ -24,10 +24,6 @@ from PIL import Image
 from io import BytesIO
 
 
-def main():
-    pass
-
-# OCR
 def ocr_request(vision_base_url, key, image_url, local_image=False):
     """ return a list of lowercase strings, may contain special characters """
     ocr_url = vision_base_url + "ocr"
@@ -107,6 +103,7 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
     if dataset == 'vqa':
         local_image = True
         image_url_base = os.path.abspath('../../VQA_data/image/')
+    assert(len(df) > 0)
     n = 1
     for i, row in df.iterrows():
         if (n%100 == 0):
@@ -120,12 +117,9 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
             handwritten_text = recognize_handwritten_text(vision_base_url, key, image_url, local_image)
             result_str = "{};{};{};{}\n".format(qid,qsn,ocr_text,handwritten_text)
             file.write(result_str)
-        except requests.exceptions.HTTPError:     # 400 error
+        except requests.exceptions.HTTPError as e:     # 400 error
+            print(e)
             continue
         n += 1
     file.close()
     print("OCR and handwritten text recognition results for {} written to {}".format(dataset, output_file_path))
-
-
-if __name__ == "__main__":
-    main()
