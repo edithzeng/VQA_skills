@@ -8,7 +8,7 @@ vision_base_url = "https://westcentralus.api.cognitive.microsoft.com/vision/v2.0
 vizwiz_train = pd.read_csv("../../data/three_vote_threshold/vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
 vqa_train = pd.read_csv('../../data/three_vote_threshold/vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
 write_to_file(vision_base_url, key, vqa_train, 'vqa_train_text_recognition.csv', 'vqa')
-write_to_file(vision_base_url, key, vizwiz_train, 'vizwiz_train_text_recognition_other.csv', 'vizwiz')
+write_to_file(vision_base_url, key, vizwiz_train, 'vizwiz_train_text_recognition.csv', 'vizwiz')
 
 # validation sets
 vqa_val = pd.read_csv('../../data/three_vote_threshold/vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
