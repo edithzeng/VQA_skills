@@ -57,7 +57,7 @@ print(K.tensorflow_backend._get_available_gpus())
 
 kfold=KFold(n_splits=10)
 
-VOCAB_SIZE = 50000
+VOCAB_SIZE = 3000
 EMBEDDING_DIM = 300
 
 class SkillClassifier():
@@ -290,7 +290,7 @@ def lstm_create_train(MAX_DOC_LEN, train_seq, embedding_matrix,
     l2_reg = regularizers.l2(regularization)
 
     # init model
-    embedding_layer = Embedding(VOCAB_SIZE, EMBEDDING_DIM,
+    embedding_layer = Embedding(VOCAB_SIZE+1, EMBEDDING_DIM,
                                 input_length=MAX_DOC_LEN,
                                 trainable=False,
                                 mask_zero=False,
