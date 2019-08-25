@@ -54,7 +54,7 @@ def nn_feature_extract_vqa(df, logfile):
 			print("{0:.0%}".format(float(i)/len(df)), flush=True)
 		row = df.iloc[i, :]
 		image_name = str(row['IMG'])
-		image_path = "../../VQA_data/images/{}".format(image_name)
+		image_path = "../../VQA_data/image/{}".format(image_name)
 		nn_feature_vector = feature_extract(image_path=image_path)
 		dset[i,:] = nn_feature_vector
 		dset.resize(dset.shape[0]+1, axis=0)
@@ -92,13 +92,17 @@ def feature_extract(image_url=None, image_path=None):
 
 
 # extract features for VQA training and validation data 
-vqa_train = pd.read_csv('../../vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
-vqa_val = pd.read_csv('../../vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
+vqa_train = pd.read_csv('../../data/three_vote_threshold/vqa_skill_typ_train.csv', skipinitialspace=True, engine='python')
+vqa_val = pd.read_csv('../../data/three_vote_threshold/vqa_skill_typ_val.csv', skipinitialspace=True, engine='python')
+vqa_test = pd.read_csv('../../data/three_vote_threshold/vqa_skill_typ_test.csv', skipinitialspace=True, engine='python')
 nn_feature_extract_vqa(vqa_train, "vqa_image_feature_train.h5")
-nn_feature_extract_vqa(vqa_train, "vqa_image_feature_val.h5")
+nn_feature_extract_vqa(vqa_val, "vqa_image_feature_val.h5")
+nn_feature_extract_vqa(vqa_test, "vqa_image_feature_test.h5")
 
 # extract image features for VizWiz training and validation data
-vizwiz_train = pd.read_csv("../../vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
-vizwiz_val = pd.read_csv("../../vizwiz_skill_typ_val.hdf5", skipinitialspace=True, engine='python')
+vizwiz_train = pd.read_csv("../../data/three_vote_threshold/vizwiz_skill_typ_train.csv", skipinitialspace=True, engine='python')
+vizwiz_val = pd.read_csv("../../data/three_vote_threshold/vizwiz_skill_typ_val.hdf5", skipinitialspace=True, engine='python')
+vizwiz_test = pd.read_csv("../../data/three_vote_threshold/vizwiz_skill_typ_test.hdf5", skipinitialspace=True, engine='python')
 nn_feature_extract_vizwiz(vizwiz_train, "vizwiz_image_feature_train.h5")
 nn_feature_extract_vizwiz(vizwiz_val, "vizwiz_image_feature_val.h5")
+nn_feature_extract_vizwiz(vizwiz_test, "vizwiz_image_feature_test.h5")

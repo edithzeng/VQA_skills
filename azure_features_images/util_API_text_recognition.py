@@ -94,8 +94,7 @@ def recognize_handwritten_text(vision_base_url, key, image_url, local_image=Fals
 
 def write_to_file(vision_base_url, key, df, output_file_path, dataset): 
     if (not (isinstance(df,pd.DataFrame) and dataset in ['vizwiz','vqa'])):
-        print("Check argv")
-        raise ValueError
+        raise ValueError("Check arguments")
     file = open(output_file_path, 'w+')
     file.write("qid;question;ocr_text;handwritten_text\n")
     local_image = False
@@ -118,7 +117,7 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
             result_str = "{};{};{};{}\n".format(qid,qsn,ocr_text,handwritten_text)
             file.write(result_str)
         except requests.exceptions.HTTPError as e:     # 400 error
-            print(e)
+            print(e, file=sys.stderr)
             continue
         n += 1
     file.close()
