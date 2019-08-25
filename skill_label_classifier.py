@@ -167,7 +167,7 @@ class SkillClassifier():
         target.set_index('QID', inplace=True)
         target = target.astype(dtype=str)
         df = target.join(features, on='QID', how='inner')
-        df['descriptions'].astype(list)
+        df['descriptions'].astype(np.ndarray)
         print("Joined features with skill labels.")
         return df
 
