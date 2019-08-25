@@ -11,5 +11,10 @@ keras
 nltk
 gensim
 opencv-python
-sudo apt-get install libsm6 libxrender1 libfontconfig1
 opencv-contrib-python
+torch
+torchvision
+
+#sudo apt-get install libsm6 libxrender1 libfontconfig1
+#sudo apt-get install nodejs
+#sudo npm install -g configurable-http-proxy

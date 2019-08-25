@@ -37,7 +37,8 @@ from sklearn.metrics import roc_auc_score
 
 def df_cutoff(df):
     """ separate large dataframes to chunks """
-    """ Azure limit up to 1000 records per request """\
+    """ returns a list of pd.DataFrame """
+    """ Azure limit up to 1000 records per request """
     buckets = len(df) // 1000
     if buckets > 0:
         chunks = [df.iloc[1000*i:min(1000*(i+1),len(df)),:] for i in range(buckets)]
@@ -64,9 +65,13 @@ def process_questions(df):
     for i, row in df.iterrows():
         curr = {}
         curr["language"] = "en"
-        curr["id"] = row[0]
-        curr["text"] = row[2]
-        curr["OBJ"], curr["TXT"], curr["COL"], curr["CNT"], curr["OTH"] = row[5], row[4], row[6], row[7], row[8]
+        curr["id"] = row[df.columns.get_loc("Unnamed: 0")]  # VizWiz QID is not numeric
+        curr["text"] = row[df.columns.get_loc("QSN")]
+        curr["OBJ"] = row[df.columns.get_loc("OBJ")]
+        curr["TXT"] = row[df.columns.get_loc("TXT")]
+        curr["COL"] = row[df.columns.get_loc("COL")]
+        curr["CNT"] = row[df.columns.get_loc("CNT")]
+        curr["OTH"] = row[df.columns.get_loc("OTH")]
         arr.append(curr)
     documents = {'documents': arr}
     return documents
@@ -83,11 +88,10 @@ def get_azure_keyphrases(df, filename, key, url):
         doc = process_questions(c)
         # get key phrases with api call
         result = extract_keyphrases(doc, key, url)
-        print(result)
         # join with skill labels and write to csv
         for row in result['documents']:
             key_phrases = row['keyPhrases']
-            record = c.loc[c['QID'] == int(row['id'])]
+            record = c.loc[c['Unnamed: 0'] == int(row['id'])]
             qid, question = record.QID.item(), record.QSN.item()
             obj, oth = record.OBJ.item(), record.OTH.item()
             txt, col, cnt = record.TXT.item(), record.COL.item(), record.CNT.item()
