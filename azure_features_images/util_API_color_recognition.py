@@ -67,7 +67,8 @@ def write_to_file(vision_base_url, key, df, output_file_path, dataset):
             dominant_colors = result['color']['dominantColors']
             result_str = "{};{};{};{};{}\n".format(qid,qsn,desc,tags,dominant_colors)
             file.write(result_str)
-        except requests.exceptions.HTTPError:      # skip error rows in VizWiz
+        except requests.exceptions.HTTPError as e:      # skip error rows in VizWiz
+            print(e, file=sys.stderr)
             continue
         n += 1
     file.close()
