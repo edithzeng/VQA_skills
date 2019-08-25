@@ -20,9 +20,11 @@ import gzip
 import pickle
 import requests
 import gzip
-# os.environ['KERAS_BACKEND']='cntk'
+
+os.environ['KERAS_BACKEND']='cntk'
 # os.environ['CUDA_VISIBLE_DEVICES'] = "-1"  # disable GPU
 os.environ['KERAS_BACKEND']='tensorflow'
+
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.models import Sequential, load_model
@@ -37,9 +39,9 @@ import nltk
 import gensim
 import logging
 from nltk.stem import PorterStemmer, WordNetLemmatizer
-#nltk.download('wordnet')
-#nltk.download('punkt')
-#nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('stopwords')
 from nltk.corpus import stopwords
 
 import keras
@@ -61,16 +63,7 @@ EMBEDDING_DIM = 300
 class SkillClassifier():
 
     def __init__(self):
-
-        self.train = None
-        self.val   = None
-
-        self.txt_train = None
-        self.col_train = None
-        self.cnt_train = None
-        self.txt_val   = None
-        self.col_val   = None
-        self.cnt_val   = None
+        pass
 
     def import_data(self):
         self.vizwiz_features_train_color = pd.read_csv('azure_features_images/data/vizwiz_train_color_recognition.csv',
@@ -167,13 +160,12 @@ class SkillClassifier():
         target.set_index('QID', inplace=True)
         target = target.astype(dtype=str)
         df = target.join(features, on='QID', how='inner')
-        df['descriptions'].astype(list)
-        print("Joined features with skill labels.")
+        #df['descriptions'].astype(list)
         return df
 
     def __create_binary_flags(self):
         # based on 3 vote threshold
-        create_flag = lambda x: 1. if x >= 3 else 0.
+        create_flag = lambda x: 1. if int(float(x)) >= 3 else 0.
         dsets = [self.vizwiz_train, self.vizwiz_val, self.vizwiz_test,
                 self.vqa_train, self.vqa_val, self.vqa_test]
         for d in dsets:
@@ -193,7 +185,7 @@ class SkillClassifier():
             self.vqa_targets_train)
         self.vqa_val      = self.join_feature_target(self.vqa_features_val_text, self.vqa_features_val_color,
             self.vqa_targets_val)
-        self.vqa_test     = self.join_feature_target(self.vqa_features_test_text, self.vqa_features_text_color,
+        self.vqa_test     = self.join_feature_target(self.vqa_features_test_text, self.vqa_features_test_color,
             self.vqa_targets_test)
         
         self.__create_binary_flags()
@@ -210,12 +202,15 @@ class SkillClassifier():
         if dataset == 'vizwiz':
             self.train = self.vizwiz_train
             self.val   = self.vizwiz_val
+            self.test  = self.vizwiz_test
         elif dataset == 'vqa':
             self.train = self.vqa_train
             self.val   = self.vqa_val
+            self.test  = self.vqa_test
         elif dataset == 'both':
             self.train = pd.concat([vizwiz_train, vqa_train], axis=0)
             self.val   = pd.concat([vizwiz_val, vqa_val], axis=0)
+            self.test  = pd.concat([vizwiz_test, vqa_test], axis=0)
         else:
             raise ValueError("Specify dataset: 'vizwiz', 'vqa' or 'both'")
         print("Training: {}\nValidation: {}".format(self.train.shape, self.val.shape))
