@@ -160,7 +160,12 @@ class SkillClassifier():
         target.set_index('QID', inplace=True)
         target = target.astype(dtype=str)
         df = target.join(features, on='QID', how='inner')
+<<<<<<< HEAD
+        df['descriptions'].astype(np.ndarray)
+        print("Joined features with skill labels.")
+=======
         #df['descriptions'].astype(list)
+>>>>>>> 1cbb9e4593b5a030db2157264d6dc940eccee35c
         return df
 
     def __create_binary_flags(self):

@@ -15,6 +15,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	embedding_matrix = X.get_word_embedding()
 	train_seq = X.train_seq
 	val_seq   = X.val_seq
+	test_seq  = X.test_seq
 
 	""" image features """
 	# train_img, val_img = X.concat_image_features()
@@ -23,6 +24,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	color_recognition_y_train = np.asarray(X.col_train).astype('float32')
 	counting_y_train = np.asarray(X.cnt_train).astype('float32')
 	train_dict = {"text": text_recognition_y_train, "color": color_recognition_y_train, 'counting': counting_y_train}
+
 	if verbose:
 		print('Number of training samples each class: ')
 		print('Text recognition - 1: {} 0: {}'.format(np.count_nonzero(text_recognition_y_train), 
@@ -39,6 +41,7 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 		y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train))
 	elif n_classes == 3:
 		y_train = np.column_stack((text_recognition_y_train, color_recognition_y_train, counting_y_train))
+
 	# check validation class distribution
 	text_recognition_y_val = np.asarray(X.txt_val).astype('float32')
 	color_recognition_y_val = np.asarray(X.col_val).astype('float32')
@@ -64,5 +67,5 @@ def preprocess(dataset, features=['QSN','descriptions','tags','dominant_colors',
 	if verbose:
 		print("PCA with {} eigenvectors".format(MAX_DOC_LEN))
 	train_seq, val_seq = preprocess_pca(train_seq, val_seq, dim=MAX_DOC_LEN)
-
+	# TODO test seq
 	return embedding_matrix, train_seq, val_seq, y_train, y_val
