@@ -34,8 +34,8 @@ from keras import backend as K
 print(K.tensorflow_backend._get_available_gpus())
 
 kfold=KFold(n_splits=10)
-VOCAB_SIZE = 50000
-EMBEDDING_DIM = 300
+VOCAB_SIZE = 3000 # 50000
+EMBEDDING_DIM = 100 #300
 MAX_DOC_LEN = 40
 
 # helper function to find optimal number of PC (elbow method)
@@ -55,104 +55,18 @@ def preprocess_pca(X_train, X_test, dim, r=None):
 	X_test_pca = pca.transform(X_test)
 	return X_train_pca, X_test_pca
 
-def text_recognition_classifier(train_seq, embedding_matrix,
-	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=1, MAX_DOC_LEN=40, verbose=0):
-	l2_reg = regularizers.l2(regularization)
-	# init model
-	embedding_layer = Embedding(input_dim=VOCAB_SIZE,
-								output_dim=EMBEDDING_DIM,
-								input_length=MAX_DOC_LEN,
-								trainable=False,
-								mask_zero=False,
-								embeddings_regularizer=l2_reg,
-								weights=[embedding_matrix])
-	model = Sequential()
-	model.add(embedding_layer)
-	model.add(Activation('tanh'))
-	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
-	model.add(Dense(1, activation='sigmoid'))
-	model.compile(loss='binary_crossentropy',
-				  optimizer=optimizer_param,
-				  metrics=['acc'])
-	history = History()
-	logfile = './LSTM/text/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
-	csv_logger = CSVLogger(logfile, separator=',', append=True)
-	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
-	print("Log file:", logfile)
-	t1 = time.time()
-	model.fit(train_seq,
-			train_labels.astype('float32'),
-			batch_size=batch_size,
-			epochs=num_epochs,
-			validation_data=val_data,
-			shuffle=True,
-			callbacks=[scheduler, history, csv_logger],
-			verbose=verbose)
-	t2 = time.time()
-	# save h5
-	model.save('./LSTM/text/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
-	with open('./LSTM/text/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
-		res_file.write(str(history.history))
-	return model, history
-
-def color_recognition_classifier(train_seq, embedding_matrix,
-	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=1, MAX_DOC_LEN=40, verbose=0):
-	l2_reg = regularizers.l2(regularization)
-	# init model
-	embedding_layer = Embedding(input_dim=VOCAB_SIZE,
-								output_dim=EMBEDDING_DIM,
-								input_length=MAX_DOC_LEN,
-								trainable=False,
-								mask_zero=False,
-								embeddings_regularizer=l2_reg,
-								weights=[embedding_matrix])
-	model = Sequential()
-	model.add(embedding_layer)
-	model.add(Activation('tanh'))
-	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
-	model.add(Dense(1, activation='sigmoid'))
-	model.compile(loss='binary_crossentropy',
-				  optimizer=optimizer_param,
-				  metrics=['acc'])
-	history = History()
-	logfile = './LSTM/text/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
-	csv_logger = CSVLogger(logfile, separator=',', append=True)
-	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
-	print("Log file:", logfile)
-	t1 = time.time()
-	model.fit(train_seq,
-			train_labels.astype('float32'),
-			batch_size=batch_size,
-			epochs=num_epochs,
-			validation_data=val_data,
-			shuffle=True,
-			callbacks=[scheduler, history, csv_logger],
-			verbose=verbose)
-	t2 = time.time()
-	# save h5
-	model.save('./LSTM/text/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
-	with open('./LSTM/text/{}_{}_{}_{}_history.txt'.format(learning_rate, regularization, batch_size, num_epochs), "w") as res_file:
-		res_file.write(str(history.history))
-	return model, history
 
 # classifier
 def skill_predictor(train_seq, embedding_matrix,
 	train_labels, val_data, learning_rate, lstm_dim, batch_size, 
-	num_epochs, optimizer_param, regularization=1e-7, n_classes=3, MAX_DOC_LEN=40, verbose=0):
+	num_epochs, optimizer_param, regularization=1e-7, n_classes=2, MAX_DOC_LEN=40, class_weight=[0.77569645, 1.40679443], verbose=0):
+
 	l2_reg = regularizers.l2(regularization)
 	# init model
 	embedding_layer = Embedding(input_dim=VOCAB_SIZE,
 								output_dim=EMBEDDING_DIM,
 								input_length=MAX_DOC_LEN,
-								trainable=False,
+								trainable=True,
 								mask_zero=False,
 								embeddings_regularizer=l2_reg,
 								weights=[embedding_matrix])
@@ -160,9 +74,8 @@ def skill_predictor(train_seq, embedding_matrix,
 	model.add(embedding_layer)
 	model.add(Activation('tanh'))
 	model.add(BatchNormalization())
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, return_sequences=True)))
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, dropout=0.5, return_sequences=True)))
-	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim)))
+	model.add(Bidirectional(LSTM(activation='tanh', units=lstm_dim, kernel_regularizer=l2_reg)))
+	model.add(BatchNormalization())
 	model.add(Dense(n_classes, activation='sigmoid'))
 	model.compile(loss='binary_crossentropy',
 				  optimizer=optimizer_param,
@@ -171,10 +84,7 @@ def skill_predictor(train_seq, embedding_matrix,
 	history = History()
 	logfile = './LSTM/{}_{}_{}_{}.log'.format(learning_rate, regularization, batch_size, num_epochs)
 	csv_logger = CSVLogger(logfile, separator=',', append=True)
-	# checkpoint = ModelCheckpoint(filepath='./LSTM/weights.hdf5', verbose=1, save_best_only=True)
-	# exponential scheduling (Andrew Senior et al., 2013) for Nesterov
 	scheduler = LearningRateScheduler(lambda x: learning_rate*10**(-1*x/64), verbose=0)
-	# stop = EarlyStopping(patience=200)
 	print("Log file:", logfile)
 
 	t1 = time.time()
@@ -185,7 +95,8 @@ def skill_predictor(train_seq, embedding_matrix,
 			  validation_data=val_data,
 			  shuffle=True,
 			  callbacks=[scheduler, history, csv_logger],
-			  verbose=verbose)
+			  verbose=verbose,
+			  class_weight=class_weight)
 	t2 = time.time()
 	# save hdf5
 	model.save('./LSTM/{}_{}_{}_{}_model.h5'.format(learning_rate, regularization, batch_size, num_epochs))
