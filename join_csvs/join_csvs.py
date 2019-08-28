@@ -19,41 +19,45 @@ vqa_val_old = pd.read_csv('../../data/two_vote_threshold/vqa_skill_typ_val.csv',
 
 
 def _join(new_csv, old_csv, output_csv):
-
-	counterpart = new_csv.copy()
-
-	# add new columns for 3-vote threshold
-	counterpart['COL_FLAG'] = ''
-	counterpart['TXT_FLAG'] = ''
-	counterpart['CNT_FLAG'] = ''
-        counterpart['QID'] = counterpart['QID'].astype(str)
-	counterpart['QID'] = counterpart['QID'].str.lower()
-
-	# get indices
-	col_i = counterpart.columns.get_loc('COL_FLAG')
-	txt_i = counterpart.columns.get_loc('TXT_FLAG')
-	cnt_i = counterpart.columns.get_loc('CNT_FLAG')
-
-	for row_i, row in old_csv.iterrows():
-		# identify the same vq in old csv
-		qid = row['QID'].lower()
-		record = counterpart.loc[counterpart['QID'] == qid]
-		if len(record) == 0:
-			print('not found')
-			continue
-		# identify the number of vote to create new binary flags
-		old_row_i = record.index.values.astype(int)[0]
-		counterpart[old_row_i, col_i] = 1 if row['COL'] >= 3 else 0
-		counterpart[old_row_i, txt_i] = 1 if row['TXT'] >= 3 else 0
-		counterpart[old_row_i, cnt_i] = 1 if row['CNT'] >= 3 else 0
-
-	# save to new csv
-	counterpart.to_csv(output_csv)
-	print('Written to', output_csv)
-
+    
+    df = old_csv.copy()
+    new = new_csv.copy()
+    
+    # add columns based on 3-vote threshold
+    df['QID'] = df['QID'].astype(str)
+    new['QID'] = new['QID'].astype(str)
+    
+    # get indices
+    obj = df.columns.get_loc('OBJ')
+    col = df.columns.get_loc('COL')
+    txt = df.columns.get_loc('TXT')
+    cnt = df.columns.get_loc('CNT')
+    oth = df.columns.get_loc('OTH')
+    
+    for i, row in df.iterrows():
+        qid = row['QID']
+        record = new_csv.loc[new_csv['QID'] == qid]
+        if len(record) != 1:
+            continue
+        obj_vote = record['OBJ'].astype('int').values[0]
+        col_vote = record['COL'].astype('int').values[0]
+        txt_vote = record['TXT'].astype('int').values[0]
+        cnt_vote = record['CNT'].astype('int').values[0]
+        oth_vote = record['OTH'].astype('int').values[0]
+        
+        df.iloc[i, obj] = 1 if obj_vote >= 3 else 0
+        df.iloc[i, col] = 1 if col_vote >= 3 else 0
+        df.iloc[i, txt] = 1 if txt_vote >= 3 else 0
+        df.iloc[i, cnt] = 1 if cnt_vote >= 3 else 0
+        df.iloc[i, oth] = 1 if oth_vote >= 3 else 0
+    
+    # save to new csv
+    df.to_csv(output_csv)
+    print("written to", output_csv)
+    
 ############
-#os.mkdir('cross_referenced_data')
-# _join(vizwiz_train_new, vizwiz_train_old, './cross_referenced_data/vizwiz_skill_typ_train.csv')
-_join(vizwiz_val_new, vizwiz_val_old, './cross_referenced_data/vizwiz_skill_typ_val.csv')
+os.mkdir('cross_referenced_data')
 _join(vqa_train_new, vqa_train_old, './cross_referenced_data/vqa_skill_typ_train.csv')
 _join(vqa_val_new, vqa_val_old, './cross_referenced_data/vqa_skill_typ_val.csv')
+_join(vizwiz_train_new, vizwiz_train_old, './cross_referenced_data/vizwiz_skill_typ_train.csv')
+_join(vizwiz_val_new, vizwiz_val_old, './cross_referenced_data/vizwiz_skill_typ_val.csv')
