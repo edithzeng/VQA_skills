@@ -55,12 +55,10 @@ print(K.tensorflow_backend._get_available_gpus())
 
 kfold=KFold(n_splits=10)
 
-# VOCAB_SIZE = 50000
-VOCAB_SIZE = 3000
+#VOCAB_SIZE = 50000
 #EMBEDDING_DIM = 300
+VOCAB_SIZE = 3000
 EMBEDDING_DIM = 100
-
-
 
 
 class Features():
@@ -90,14 +88,15 @@ class Features():
 									  dtype={'qid':str, 'question':str, 'descriptions':list,
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_train = pd.read_csv('../vizwiz_skill_typ_train.csv', dtype={'QID':str},
+		self.vizwiz_targets_train = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_train.csv', dtype={'QID':str},
 										delimiter=',', quotechar='"',
 										engine='python', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_val = pd.read_csv('../vizwiz_skill_typ_val.csv', dtype={'QID':str},
+		self.vizwiz_targets_val = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_val.csv', dtype={'QID':str},
 									delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
 	def import_vizwiz_image(self):
-		self.vizwiz_features_train_image = h5py.File("./nn_features_images/vizwiz_image_feature_train.hdf5", 'r')
-		self.vizwiz_features_val_image   = h5py.File("./nn_features_images/vizwiz_image_feature_val.hdf5", 'r')
+		pass#self.vizwiz_features_train_image = pd.read_csv("./nn_features_images/steady/vizwiz_nn_features_train.csv", delimiter=';')
+		#self.vizwiz_features_train_image = h5py.File("./nn_features_images/vizwiz_image_feature_train.hdf5", 'r')
+		#self.vizwiz_features_val_image   = h5py.File("./nn_features_images/vizwiz_image_feature_val.hdf5", 'r')
 	def import_vqa_text(self):
 		self.vqa_features_train_color = pd.read_csv('azure_features_images/data/vqa_train_color_recognition.csv',
 									delimiter=';', engine='python', 
@@ -105,8 +104,8 @@ class Features():
 											'tags':list, 'dominant_colors':list},
 									quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_train_text = pd.read_csv('azure_features_images/data/vqa_train_text_recognition.csv',
-									  delimiter=';', engine='python', 
-									  dtype={'qid':str, 'question':str, 'descriptions':list,
+									  delimiter=';', engine='python', encoding='latin-1',
+									  dtype={'qid':str, 'question':str, 
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_val_color = pd.read_csv('azure_features_images/data/vqa_val_color_recognition.csv',
@@ -116,16 +115,18 @@ class Features():
 										quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 		self.vqa_features_val_text = pd.read_csv('azure_features_images/data/vqa_val_text_recognition.csv',
 									  delimiter=';', engine='python', 
-									  dtype={'qid':str, 'question':str, 'descriptions':list,
+									  dtype={'qid':str, 'question':str,
 											'ocr_text':list, 'handwritten_text':list},
 									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_targets_train = pd.read_csv('../vqa_skill_typ_train.csv', dtype={'QID':str},
+		self.vqa_targets_train = pd.read_csv('../data/three_vote_threshold/vqa_skill_typ_train.csv', dtype={'QID':str},
 										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vqa_targets_val = pd.read_csv('../vqa_skill_typ_val.csv', dtype={'QID':str},
+		self.vqa_targets_val = pd.read_csv('../data/three_vote_threshold/vqa_skill_typ_val.csv', dtype={'QID':str},
 										engine='python', quotechar='"', error_bad_lines=False, warn_bad_lines=False)
 	def import_vqa_image(self):
-		self.vqa_features_train_image    = h5py.File("./nn_features_images/vqa_image_feature_train.hdf5", 'r')
-		self.vqa_feature_val_image       = h5py.File("./nn_features_images/vqa_image_feature_val.hdf5", 'r')
+		pass#self.vqa_features_train_image = # pd.read_csv("./nn_features_images/steady/vqa")
+		#self.vqa_features_val_image   = 
+		#self.vqa_features_train_image    = h5py.File("./nn_features_images/vqa_image_feature_train.hdf5", 'r')
+		#self.vqa_feature_val_image       = h5py.File("./nn_features_images/vqa_image_feature_val.hdf5", 'r')
 	def import_features(self, image_features=False):
 		if self.dataset == 'vizwiz':
 			self.import_vizwiz_text()
@@ -153,7 +154,7 @@ class Features():
 		target.set_index('QID', inplace=True)
 		target = target.astype(dtype=str)
 		df = target.join(features, on='QID', how='inner')
-		df['descriptions'].astype(list)
+		#df['descriptions'].astype(list)
 		return df
 	def concat_image_features(self):
 		if self.dataset == 'vizwiz':
@@ -202,6 +203,7 @@ class Features():
 			op.append(doc)
 		op = np.asarray(op)
 		return op
+
 	def lem(self, s):
 		arr = s.split(" ")
 		lem = WordNetLemmatizer()
@@ -210,15 +212,18 @@ class Features():
 			word = lem.lemmatize(w) + ' '
 			op += word
 		return op
+
 	def remove_stop_words(self, features):
 		stop_words = set(stopwords.words('english'))
 		cleansed = [w for w in features if not w in stop_words]
 		return cleansed
+
 	def set_features(self, feature_columns):
 		X_train = self.preprocess_text(self.question_features_train_df[feature_columns])
 		X_val   = self.preprocess_text(self.question_features_val_df[feature_columns])
 		self.question_features_train = self.remove_stop_words(X_train)
 		self.question_features_val   = self.remove_stop_words(X_val)
+
 	def create_question_feature_df(self):
 		if self.dataset == 'vizwiz':
 			self.question_features_train_df = self.join_question_feature_target(self.vizwiz_features_train_text, self.vizwiz_features_train_color, 
@@ -230,6 +235,7 @@ class Features():
 				self.vqa_targets_train)
 			self.question_features_val_df = self.join_question_feature_target(self.vqa_features_val_text, self.vqa_features_val_color,
 				self.vqa_targets_val)
+
 	def set_targets(self):
 		if self.question_features_train_df is not None and self.question_features_val_df is not None:
 			self.txt_train = self.question_features_train_df['TXT'].values
@@ -238,7 +244,10 @@ class Features():
 			self.txt_val   = self.question_features_val_df['TXT'].values.astype('float32')
 			self.col_val   = self.question_features_val_df['COL'].values.astype('float32')
 			self.cnt_val   = self.question_features_val_df['CNT'].values.astype('float32')
+
+
 	def get_word_embedding(self, pretrained_embedding):
+
 		# tokenize text features
 		tok = Tokenizer(num_words=VOCAB_SIZE, 
 						filters='!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n',
@@ -246,18 +255,20 @@ class Features():
 						split=" ")
 		tok.fit_on_texts(self.question_features_train)
 		# create training and validation sequences
-		MAX_DOC_LEN = 40
 		train_seq   = tok.texts_to_sequences(self.question_features_train)
 		val_seq     = tok.texts_to_sequences(self.question_features_val)
 		# pad training and validation sequences
+		MAX_DOC_LEN = 40
 		train_seq        = sequence.pad_sequences(train_seq, maxlen=MAX_DOC_LEN)
 		val_seq          = sequence.pad_sequences(val_seq, maxlen=MAX_DOC_LEN)
+
 		# standardize training and testing features
 		sc = StandardScaler()
 		train_seq = sc.fit_transform(train_seq)
 		val_seq = sc.transform(val_seq)
 		self.train_seq = train_seq
 		self.val_seq = val_seq
+
 		# punkt sentence level tokenizer
 		sent_lst = [] 
 		for doc in self.question_features_train:
@@ -265,25 +276,29 @@ class Features():
 			for sent in sentences:
 				word_lst = [w for w in nltk.tokenize.word_tokenize(sent) if w.isalnum()]
 				sent_lst.append(word_lst)
+
 		if pretrained_embedding:
-			googlenews_corpus = '/anaconda/envs/py35/lib/python3.5/site-packages/gensim/test/test_data/GoogleNews-vectors-negative300.bin'
+			googlenews_corpus = '/home/skillPredict/.local/lib/python3.6/site-packages/gensim/test/test_data/GoogleNews-vectors-negative300.bin'
 			# load pre-trained word2vec on GoogleNews (https://code.google.com/archive/p/word2vec/)
 			logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 			word2vec_model = gensim.models.KeyedVectors.load_word2vec_format(datapath(googlenews_corpus), binary=True)
 		else:
 			logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 			word2vec_model = gensim.models.Word2Vec(sentences=sent_lst, min_count=6, size=EMBEDDING_DIM, sg=1, workers=os.cpu_count())
+
 		# get word vetors
 		embeddings_index = {}
 		for word in word2vec_model.wv.vocab:
 			coefs = np.asarray(word2vec_model.wv[word], dtype='float32')
 			embeddings_index[word] = coefs
 		print('Total %s word vectors' % len(embeddings_index))
-		# Initial word embedding
+
+		# get word embedding
 		embedding_matrix = np.zeros((VOCAB_SIZE, EMBEDDING_DIM))
 		for word, i in tok.word_index.items():
 			embedding_vector = embeddings_index.get(word)
 			if embedding_vector is not None and i < VOCAB_SIZE:
 				embedding_matrix[i] = embedding_vector
 		self.embedding_matrix = embedding_matrix
+
 		return self.embedding_matrix
