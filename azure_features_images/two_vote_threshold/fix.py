@@ -13,7 +13,7 @@ for line in csv:
     sp = line.split(';')
     head = sp[:-1]
     trail = sp[-1].replace(',','')
-    new_line = ';'.join(head) + trail
+    new_line = ';'.join(head) + ';' + trail
     new.append(new_line)
 
 with open('vqa_train_text_recognition.csv', 'w') as f:
