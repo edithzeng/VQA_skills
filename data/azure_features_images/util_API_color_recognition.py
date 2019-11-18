@@ -18,61 +18,62 @@ from PIL import Image
 from io import BytesIO
 
 """ 
-    Analyzes image with Azure pretrained model,
-    with the goal to perform color recognition
+    analyze image with pretrained model
 """
 
-def main():
-    pass
 
-def analyze_image(vision_base_url, image_url, key, local_image=False):
+def analyze_image(vision_base_url, image_url, key):
+    """ make the actual api call """
     vision_analyze_url = vision_base_url + 'analyze'
     headers = {'Ocp-Apim-Subscription-key': key}
     params = {'visualfeatures': 'Categories,Description,Color'}
-    if local_image:
-        image_path = image_url
-        image_data = open(image_path, "rb").read()
-        headers    = {'Ocp-Apim-Subscription-Key': key,
-                      'Content-Type': 'application/octet-stream'}
-        response   = requests.post(vision_analyze_url, headers=headers, params=params, data=image_data)
-    else:
-        data       = {'url': image_url}
-        response   = requests.post(vision_analyze_url, headers=headers, params=params, json=data)
+    image_path = image_url
+    image_data = open(image_path, "rb").read()
+    headers    = {'Ocp-Apim-Subscription-Key': key,
+                  'Content-Type': 'application/octet-stream'}
+    response   = requests.post(vision_analyze_url, headers=headers, params=params, data=image_data)
     response.raise_for_status()
     analysis = response.json()
     return analysis
 
-def write_to_file(vision_base_url, key, df, output_file_path, dataset): 
-    if (not (isinstance(df,pd.DataFrame) and dataset in ['vizwiz','vqa'])):
-        raise ValueError('Check arguments')
+
+
+def write_to_file(vision_base_url, key, df, output_file_path, dataset):
+
+    if (not (isinstance(df, pd.DataFrame) and dataset in ['vizwiz','vqa'])):
+        raise ValueError
+
     file = open(output_file_path, 'w+')
     file.write("qid;question;descriptions;tags;dominant_colors\n")
-    local_image = False
-    image_url_base = 'https://ivc.ischool.utexas.edu/VizWiz/data/Images/'
-    if dataset == 'vqa':
-        local_image = True
-        image_url_base = os.path.abspath('../../VQA_data/image/')
+    image_url_base = os.path.abspath(f'../../data/image/{dataset}')
+
     n = 1
     for i, row in df.iterrows():
         if (n%100 == 0):
             print("{0:.0%}".format(float(n)/len(df)), flush=True)
+
         qid = row[df.columns.get_loc('QID')]
         img = row[df.columns.get_loc('IMG')]
         qsn = row[df.columns.get_loc('QSN')]
         image_url      = os.path.join(image_url_base, img)
+        
         try:
-            result     = analyze_image(vision_base_url, image_url, key, local_image)
+            result     = analyze_image(vision_base_url, image_url, key)
             tags       = result['description']['tags']
             desc       = result['description']['captions']    # counting: [0]['txt']
             dominant_colors = result['color']['dominantColors']
             result_str = "{};{};{};{};{}\n".format(qid,qsn,desc,tags,dominant_colors)
             file.write(result_str)
-        except requests.exceptions.HTTPError as e:      # skip error rows in VizWiz
+            
+        except requests.exceptions.HTTPError as e:
             print(e, file=sys.stderr)
             continue
+        
         n += 1
+
     file.close()
     print("Color recognition results for {} written to {}".format(dataset, output_file_path))
 
+
 if __name__ == "__main__":
-    main()
+    pass
