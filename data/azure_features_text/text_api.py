@@ -1,44 +1,8 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import os, copy, sys
-import json
-import pprint
-import io
-import requests
-import cv2
-import time
-import urllib.error as error
-from pprint import pprint
-import skimage
-from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split, cross_val_score, KFold
-from sklearn.linear_model import LogisticRegression
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import LinearSVC
-from sklearn.ensemble import VotingClassifier, RandomForestClassifier
-from keras.applications.resnet50 import ResNet50
-from keras.preprocessing import image
-from keras.applications.resnet50 import preprocess_input, decode_predictions
-from keras.applications.vgg16 import VGG16
-from keras.preprocessing import image
-from keras.applications.vgg16 import preprocess_input
-import torchvision.models as models
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms, utils
-import torchvision.transforms as transforms
-from PIL import Image
-from torch.autograd import Variable
-import torchvision.models as models
-from sklearn.metrics import roc_auc_score
 
 def df_cutoff(df):
     """ separate large dataframes to chunks """
     """ returns a list of pd.DataFrame """
-    """ Azure limit up to 1000 records per request """
     buckets = len(df) // 1000
     if buckets > 0:
         chunks = [df.iloc[1000*i:min(1000*(i+1),len(df)),:] for i in range(buckets)]
@@ -55,8 +19,7 @@ def extract_keyphrases(documents, key, url):
     try:
         return languages
     except KeyError:
-        print("error index:", index, "error question:", question)
-        print(languages)
+        print("error index:", index, "question:", question)
         return
     
 def process_questions(df):
@@ -65,7 +28,7 @@ def process_questions(df):
     for i, row in df.iterrows():
         curr = {}
         curr["language"] = "en"
-        curr["id"] = row[df.columns.get_loc("Unnamed: 0")]  # VizWiz QID is not numeric
+        curr["id"] = row[df.columns.get_loc("Unnamed: 0")]  # VizWiz QID is str
         curr["text"] = row[df.columns.get_loc("QSN")]
         curr["OBJ"] = row[df.columns.get_loc("OBJ")]
         curr["TXT"] = row[df.columns.get_loc("TXT")]
@@ -75,6 +38,7 @@ def process_questions(df):
         arr.append(curr)
     documents = {'documents': arr}
     return documents
+
 
 def get_azure_keyphrases(df, filename, key, url):
     """ does not apply to test data w/o skill labels """
