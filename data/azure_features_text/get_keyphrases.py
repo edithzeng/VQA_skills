@@ -5,20 +5,10 @@ Then writes to a local .csv
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from text_api import *
-import argparse
+from keyphrase_api_call import *
 
-parser = argparse.ArgumentParser(description='Procedure to extract relevant features for color recognition label.')
-
-parser.add_argument('--vizwiz_qsn_train', type=str, default='../../data/questions/vizwiz_skill_typ_train.csv')
-parser.add_argument('--vizwiz_qsn_val', type=str, default='../../data/questions/vizwiz_skill_typ_val.csv')
-parser.add_argument('--vizwiz_qsn_test', type=str, default='../../data/questions/vqa_skill_typ_test.csv')
-
-parser.add_argument('--vqa_qsn_train', type=str, default='../../data/questions/vqa_skill_typ_train.csv')
-parser.add_argument('--vqa_qsn_val', type=str, default='../../data/questions/vqa_skill_typ_val.csv')
-parser.add_argument('--vqa_qsn_test', type=str, default='../../data/questions/vqa_skill_typ_test.csv')
-
-args = parser.parse_args
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+import args
 
 # connection setup - text analytics
 key = str(input("Enter text analytics key:"))

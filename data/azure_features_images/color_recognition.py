@@ -1,24 +1,13 @@
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from util_API_color_recognition import *
-import argparse
 
-parser = argparse.ArgumentParser(description='Procedure to extract relevant features for color recognition label.')
-
-parser.add_argument('--vizwiz_qsn_train', type=str, default='../../data/questions/vizwiz_skill_typ_train.csv')
-parser.add_argument('--vizwiz_qsn_val', type=str, default='../../data/questions/vizwiz_skill_typ_val.csv')
-parser.add_argument('--vizwiz_qsn_test', type=str, default='../../data/questions/vqa_skill_typ_test.csv')
-
-parser.add_argument('--vqa_qsn_train', type=str, default='../../data/questions/vqa_skill_typ_train.csv')
-parser.add_argument('--vqa_qsn_val', type=str, default='../../data/questions/vqa_skill_typ_val.csv')
-parser.add_argument('--vqa_qsn_test', type=str, default='../../data/questions/vqa_skill_typ_test.csv')
-
-args = parser.parse_args
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+import args
 
 # connection setup - color in image
-key = str(input("Enter computer vision image analysis key for microsoft VM:"))
+key = str(input("Computer vision image analysis key for microsoft VM:"))
 vision_base_url = "https://eastus.api.cognitive.microsoft.com/vision/v2.0/"
 
 # training sets

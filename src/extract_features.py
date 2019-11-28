@@ -14,7 +14,6 @@ from sklearn.model_selection import KFold
 from sklearn.metrics import accuracy_score, roc_auc_score, roc_curve
 from sklearn.preprocessing import StandardScaler
 
-import gzip
 import pickle
 import requests
 import gzip
@@ -22,7 +21,6 @@ import gzip
 import keras
 import tensorflow as tf
 os.environ['KERAS_BACKEND']='tensorflow'
-
 from keras.preprocessing import sequence
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.models import Sequential, load_model
@@ -53,12 +51,17 @@ print(device_lib.list_local_devices())
 from keras import backend as K
 print(K.tensorflow_backend._get_available_gpus())
 
+#######################
 kfold=KFold(n_splits=10)
 
 #VOCAB_SIZE = 50000
 #EMBEDDING_DIM = 300
 VOCAB_SIZE = 3000
 EMBEDDING_DIM = 100
+########################
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import args
+########################
 
 
 class Features():
