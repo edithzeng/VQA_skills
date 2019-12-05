@@ -71,35 +71,36 @@ class Features():
 			raise ValueError("Specify 'vizwiz', 'vqa'")
 		self.dataset = dataset
 	def import_vizwiz_text(self):
-		self.vizwiz_features_train_color = pd.read_csv('azure_features_images/data/vizwiz_train_color_recognition.csv',
-									  delimiter=';', engine='python', 
-									  dtype={'qid':str, 'question':str, 'descriptions':list,
-											'tags':list, 'dominant_colors':list},
-									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_features_train_text = pd.read_csv('azure_features_images/data/vizwiz_train_text_recognition.csv',
-									  delimiter=';', engine='python', 
-									  dtype={'qid':str, 'question':str, 'descriptions':list,
-											'ocr_text':list, 'handwritten_text':list},
-									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_features_val_color = pd.read_csv('azure_features_images/data/vizwiz_val_color_recognition.csv',
-										delimiter=';', engine='python',
-										dtype={'qid':str, 'question':str, 'descriptions':list,
-											'tags':list, 'dominant_colors':list},
-										quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_features_val_text = pd.read_csv('azure_features_images/data/vizwiz_val_text_recognition.csv',
-									  delimiter=';', engine='python', 
-									  dtype={'qid':str, 'question':str, 'descriptions':list,
-											'ocr_text':list, 'handwritten_text':list},
-									  quotechar='"', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_train = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_train.csv', dtype={'QID':str},
-										delimiter=',', quotechar='"',
-										engine='python', error_bad_lines=False, warn_bad_lines=False)
-		self.vizwiz_targets_val = pd.read_csv('../data/three_vote_threshold/vizwiz_skill_typ_val.csv', dtype={'QID':str},
-									delimiter=',', quotechar='"', engine='python', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_features_train_color = pd.read_csv(args.vizwiz_color_recog_train, delimiter=';', engine='python', 
+								dtype={'qid':str, 'question':str, 'descriptions':list,
+								'tags':list, 'dominant_colors':list},
+								quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_features_train_text = pd.read_csv(args.vizwiz_text_recog_train,
+							    delimiter=';', engine='python', 
+							    dtype={'qid':str, 'question':str, 'descriptions':list,
+							    'ocr_text':list, 'handwritten_text':list},
+							    quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_features_val_color = pd.read_csv(args.vizwiz_color_recog_val,
+							    delimiter=';', engine='python',
+							    dtype={'qid':str, 'question':str, 'descriptions':list,
+							    'tags':list, 'dominant_colors':list},
+							    quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_features_val_text = pd.read_csv(args.vizwiz_text_recog_val,
+							    delimiter=';', engine='python', 
+							     dtype={'qid':str, 'question':str, 'descriptions':list,
+							    'ocr_text':list, 'handwritten_text':list},
+							    quotechar='"', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_targets_train = pd.read_csv(args.vizwiz_qsn_train, dtype={'QID':str},
+						            delimiter=',', quotechar='"',
+							    engine='python', error_bad_lines=False, warn_bad_lines=False)
+		self.vizwiz_targets_val = pd.read_csv(args.vizwiz_qsn_val, dtype={'QID':str},
+							    delimiter=',', quotechar='"', engine='python',
+                                                            error_bad_lines=False, warn_bad_lines=False)
+
 	def import_vizwiz_image(self):
-		pass#self.vizwiz_features_train_image = pd.read_csv("./nn_features_images/steady/vizwiz_nn_features_train.csv", delimiter=';')
-		#self.vizwiz_features_train_image = h5py.File("./nn_features_images/vizwiz_image_feature_train.hdf5", 'r')
-		#self.vizwiz_features_val_image   = h5py.File("./nn_features_images/vizwiz_image_feature_val.hdf5", 'r')
+		self.vizwiz_features_train_image = pd.read_csv("./nn_features_images/steady/vizwiz_nn_features_train.csv", delimiter=';')
+		self.vizwiz_features_train_image = h5py.File("./nn_features_images/vizwiz_image_feature_train.hdf5", 'r')
+		self.vizwiz_features_val_image   = h5py.File("./nn_features_images/vizwiz_image_feature_val.hdf5", 'r')
 	def import_vqa_text(self):
 		self.vqa_features_train_color = pd.read_csv('azure_features_images/data/vqa_train_color_recognition.csv',
 									delimiter=';', engine='python', 
