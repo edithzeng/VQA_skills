@@ -1,5 +1,8 @@
-# modified based on 
-# https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
+"""
+A list of contractions to expand.
+modified based on 
+https://stackoverflow.com/questions/19790188/expanding-english-language-contractions-in-python
+"""
 
 contractions = { 
 "ain't": "am not / are not / is not / has not / have not",

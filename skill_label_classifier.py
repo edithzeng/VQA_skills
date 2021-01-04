@@ -62,8 +62,10 @@ EMBEDDING_DIM = 300
 
 class SkillClassifier():
 
-    def __init__(self):
-        pass
+    """ A wrapper for a simple binary classifier for each skill label. """
+
+    def __init__(self, name=None):
+        self.name = name 
 
     def import_data(self):
         self.vizwiz_features_train_color = pd.read_csv('azure_features_images/data/vizwiz_train_color_recognition.csv',
@@ -145,27 +147,23 @@ class SkillClassifier():
         feature_text = copy.deepcopy(feature_df_text)
         feature_color = copy.deepcopy(feature_df_color)
         target = copy.deepcopy(target_df)
-        # text features 
+        # text
         feature_text.rename({'qid': 'QID'}, axis=1, inplace=True)
         feature_text.set_index('QID', inplace=True)
-        # color features
+        # color
         feature_color.rename({'qid': 'QID'}, axis=1, inplace=True)
         feature_color.set_index('QID', inplace=True)
-        # join features
+        # join
         features = feature_text.join(feature_color[['descriptions','tags','dominant_colors']],
                                    on='QID',
                                    how='outer')
-        # join features with target
+        # add label skill categories
         target = target[['QID', 'IMG', 'QSN', 'TXT', 'OBJ', 'COL', 'CNT', 'OTH']]
         target.set_index('QID', inplace=True)
         target = target.astype(dtype=str)
         df = target.join(features, on='QID', how='inner')
-<<<<<<< HEAD
         df['descriptions'].astype(np.ndarray)
         print("Joined features with skill labels.")
-=======
-        #df['descriptions'].astype(list)
->>>>>>> 1cbb9e4593b5a030db2157264d6dc940eccee35c
         return df
 
     def __create_binary_flags(self):
